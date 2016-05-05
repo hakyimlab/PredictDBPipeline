@@ -25,14 +25,14 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   resultscol <- c("gene","alpha","cvm","lambda.iteration","lambda.min","n.snps","R2","pval","genename")
   dimnames(resultsarray)[[2]] <- resultscol
   workingbest <- out_dir %&% "working_TW_" %&% tis %&% "_exp_" %&% n_k_folds %&% "-foldCV_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% "_chr" %&% chrom %&% ".txt"
-  write(resultscol,file=workingbest,ncolumns=9,sep="\t")
+  write(resultscol, file = workingbest, ncolumns = 9, sep = "\t")
 
   weightcol = c("gene","rsid","ref","alt","beta","alpha")
   workingweight <- out_dir %&% "TW_" %&% tis %&% "_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% "_weights_chr" %&% chrom %&% ".txt"
-  write(weightcol,file=workingweight,ncol=6,sep="\t")
+  write(weightcol, file = workingweight, ncol = 6, sep = "\t")
 
   for (i in 1:length(exp_genes)) {
-    cat(i,"/",length(exp_genes),"\n")
+    cat(i, "/", length(exp_genes), "\n")
     gene <- exp_genes[i]
     # Reduce genotype data to only include SNPs within 1 megabase of gene in question.
     cisgenos <- get_cisgenos(gene, gene_annot, snp_annot)
@@ -41,23 +41,23 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
       bestbetas <- data.frame()
     } else {
       # Reduce cisgenos to only include SNPs with at least 1 minor allele in dataset
-      minorsnps <- subset(colMeans(cisgenos), colMeans(cisgenos,na.rm=TRUE)>0)
+      minorsnps <- subset(colMeans(cisgenos), colMeans(cisgenos, na.rm = TRUE) > 0)
       minorsnps <- names(minorsnps)
       cisgenos <- cisgenos[,minorsnps]
       if (is.null(dim(cisgenos)) | dim(cisgenos)[2] == 0){
         # Skip genes with <2 cis-SNPs in dataset
         bestbetas <- data.frame()
       } else {
-        # Pull expression data for gene    
+        # Pull expression data for gene
         exppheno <- expression[,gene]
         # Scale for fastLmPure to work properly
-        exppheno <- scale(exppheno, center=T, scale=T) 
+        exppheno <- scale(exppheno, center = TRUE, scale = TRUE) 
         exppheno[is.na(exppheno)] <- 0
         rownames(exppheno) <- rownames(expression)
 
         # Run Cross-Validation over alphalist
         # parallel = TRUE is slower on tarbell for some reason
-        fit <- cv.glmnet(cisgenos,exppheno,nfolds = n_k_folds, alpha = alpha, keep = TRUE, foldid = groupid, parallel = FALSE)
+        fit <- cv.glmnet(cisgenos, exppheno, nfolds = n_k_folds, alpha = alpha, keep = TRUE, foldid = groupid, parallel = FALSE)
         
         # Pull info from fit to find the best lambda   
         fit.df <- data.frame(fit$cvm, fit$lambda, 1:length(fit$cvm))
