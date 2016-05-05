@@ -34,58 +34,65 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   for (i in 1:length(exp_genes)) {
     cat(i,"/",length(exp_genes),"\n")
     gene <- exp_genes[i]
+    # Reduce genotype data to only include SNPs within 1 megabase of gene in question.
     cisgenos <- get_cisgenos(gene, gene_annot, snp_annot)
     if (is.null(dim(cisgenos))) {
-      bestbetas <- data.frame() ###effectively skips genes with <2 cis-SNPs
+      # Skip genes without any cis-SNPS
+      bestbetas <- data.frame()
     } else {
-      minorsnps <- subset(colMeans(cisgenos), colMeans(cisgenos,na.rm=TRUE)>0) ###pull snps with at least 1 minor allele###
+      # Reduce cisgenos to only include SNPs with at least 1 minor allele in dataset
+      minorsnps <- subset(colMeans(cisgenos), colMeans(cisgenos,na.rm=TRUE)>0)
       minorsnps <- names(minorsnps)
-
       cisgenos <- cisgenos[,minorsnps]
-      if (is.null(dim(cisgenos)) | dim(cisgenos)[2] == 0){###effectively skips genes with <2 cis-SNPs
-        bestbetas <- data.frame() ###effectively skips genes with <2 cis-SNPs
+      if (is.null(dim(cisgenos)) | dim(cisgenos)[2] == 0){
+        # Skip genes with <2 cis-SNPs in dataset
+        bestbetas <- data.frame()
       } else {
-            
-        exppheno <- expression[,gene] ### pull expression data for gene
-        exppheno <- scale(exppheno, center=T, scale=T)  ###need to scale for fastLmPure to work properly
+        # Pull expression data for gene    
+        exppheno <- expression[,gene]
+        # Scale for fastLmPure to work properly
+        exppheno <- scale(exppheno, center=T, scale=T) 
         exppheno[is.na(exppheno)] <- 0
         rownames(exppheno) <- rownames(expression)
 
-        ##run Cross-Validation over alphalist
-        fit <- cv.glmnet(cisgenos,exppheno,nfolds=n_k_folds,alpha=alpha,keep=T,foldid=groupid,parallel=F) ##parallel=T is slower on tarbell, not sure why
-            
-        fit.df <- data.frame(fit$cvm,fit$lambda,1:length(fit$cvm)) ##pull info to find best lambda
-        best.lam <- fit.df[which.min(fit.df[,1]),] # needs to be min or max depending on cv measure (MSE min, AUC max, ...)
-        cvm.best = best.lam[,1]
-        lambda.best = best.lam[,2]
-        nrow.best = best.lam[,3] ##position of best lambda in cv.glmnet output
-            
-        ret <- as.data.frame(fit$glmnet.fit$beta[,nrow.best]) # get betas from best lambda
+        # Run Cross-Validation over alphalist
+        # parallel = TRUE is slower on tarbell for some reason
+        fit <- cv.glmnet(cisgenos,exppheno,nfolds = n_k_folds, alpha = alpha, keep = TRUE, foldid = groupid, parallel = FALSE)
+        
+        # Pull info from fit to find the best lambda   
+        fit.df <- data.frame(fit$cvm, fit$lambda, 1:length(fit$cvm))
+        # Needs to be min or max depending on cv measure (MSE min, AUC max, ...)
+        best.lam <- fit.df[which.min(fit.df[,1]),]
+        cvm.best <- best.lam[,1]
+        lambda.best <- best.lam[,2]
+        # Position of best lambda in cv.glmnet output
+        nrow.best <- best.lam[,3]
+        # Get the betas from the best lambda value
+        ret <- as.data.frame(fit$glmnet.fit$beta[,nrow.best])
         ret[ret == 0.0] <- NA
-        bestbetas = as.vector(ret[which(!is.na(ret)),]) # vector of non-zero betas
-        names(bestbetas) = rownames(ret)[which(!is.na(ret))]
-            
-        pred.mat <- fit$fit.preval[,nrow.best] # pull out predictions at best lambda
-            
+        # Pull the non-zero betas from model
+        bestbetas <- as.vector(ret[which(!is.na(ret)),])
+        names(bestbetas) <- rownames(ret)[which(!is.na(ret))]
+        # Pull out the predictions at the best lambda value.    
+        pred.mat <- fit$fit.preval[,nrow.best]
         }
     }
     if (length(bestbetas) > 0) {
       res <- summary(lm(exppheno~pred.mat))
       genename <- as.character(gene_annot[gene, 3])
       rsq <- res$r.squared
-      pval <- res$coef[2,4]
-        
-      resultsarray[gene,] <- c(gene, alpha, cvm.best, nrow.best, lambda.best, length(bestbetas), rsq, pval, genename)
-        
-      ### output best shrunken betas for PrediXcan
+      pval <- res$coef[2,4]  
+      resultsarray[gene,] <- c(gene, alpha, cvm.best, nrow.best, lambda.best, length(bestbetas), rsq, pval, genename)  
+      # Output best shrunken betas for PrediXcan
       bestbetalist <- names(bestbetas)
       bestbetainfo <- snp_annot[bestbetalist,]
       betatable <- as.matrix(cbind(bestbetainfo,bestbetas))
-      ##output "gene","rsid","refAllele","effectAllele","beta"
-      # To change rsid to the chr_pos_ref_alt_build label, change "rsid" below to "varID".  Want to do eventually.
-      betafile<-cbind(gene,betatable[,"rsid"],betatable[,"refAllele"],betatable[,"effectAllele"],betatable[,"bestbetas"], alpha) 
-      write(t(betafile),file=workingweight,ncolumns=6,append=T,sep="\t") # t() necessary for correct output from write() function
-      write(resultsarray[gene,],file=workingbest,ncolumns=9,append=T,sep="\t")
+      # Output "gene", "rsid", "refAllele", "effectAllele", "beta"
+      # For future: To change rsid to the chr_pos_ref_alt_build label, change "rsid" below to "varID".
+      betafile<-cbind(gene,betatable[,"rsid"],betatable[,"refAllele"],betatable[,"effectAllele"],betatable[,"bestbetas"], alpha)
+      # Transposing betafile necessary for crrect output from write() function
+      write(t(betafile), file = workingweight, ncolumns = 6, append = TRUE, sep = "\t")
+      write(resultsarray[gene,], file = workingbest, ncolumns = 9, append = TRUE, sep = "\t")
     } else {
       genename <- as.character(gene_annot[gene,3])
       resultsarray[gene,1] <- gene
