@@ -16,7 +16,9 @@ geno_file_name = os.path.basename(geno_file)
 
 # Make New File Names
 # Expected genotype file ends in .txt
-genotype_by_chr_files = [os.path.join('genotype_by_chr', geno_file_name[:-3] + "chr" + str(i) + ".biallelic.txt") for i in range(1,23)]
+genotype_by_chr_files = [os.path.join('data', 'intermediate', 'genotypes',
+    geno_file_name[:-3] + "chr" + str(i) + ".biallelic.txt") for i in range(1,23)]
+
 geno_by_chr = [open(f, 'w') for f in genotype_by_chr_files]
 
 with open(geno_file, 'r') as geno:

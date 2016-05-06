@@ -100,7 +100,7 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
       resultsarray[gene,9] <- genename
     }
   }
-  write.table(resultsarray,file=out_dir %&% "TW_" %&% tis %&% "_exp_" %&% n_k_folds %&% "-foldCV_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% "_chr" %&% chrom %&% ".txt",quote=F,row.names=F,sep="\t")
+  write.table(resultsarray,file=out_dir %&% "TW_" %&% tis %&% "_chr" %&% chrom %&% "_exp_" %&% n_k_folds %&% "-foldCV_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% ".txt",quote=F,row.names=F,sep="\t")
 }
 
 get_cisgenos <- function(gene, gene_annot, snp_annot) {

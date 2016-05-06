@@ -1,0 +1,30 @@
+#!/bin/bash
+###############################
+# Resource Manager Directives #
+###############################
+
+### Run using command -v tissue=tissue_name, chrom=chromosome_number
+
+### Set the name of the job
+#PBS -N build_${tissue}_model_chr${chrom}
+### Select the shell you would like to script to execute within.
+#PBS -S /bin/bash
+### Inform the scheduler of the expected runtime, where
+### walltime=HH:MM:SS.
+#PBS -l walltime=02:00:00
+### Inform the scheduler of the number of CPU cores for your job.
+#PBS -l nodes=1:ppn=1
+### Inform the scheduler of the amount of memory you expect
+### to use. Use units of ‘b’, ‘kb’, ‘mb’, or ‘gb’.
+#PBS -l mem=4gb
+### Set the destination for your program’s output: stdout and stderr.
+#PBS -o ${PBS_O_WORKDIR}/joblogs/${PBS_JOBNAME}.e${PBS_JOBID}
+#PBS -e ${PBS_O_WORKDIR}/joblogs/${PBS_JOBNAME}.o${PBS_JOBID}
+ 
+#################
+# Job Execution #
+#################
+
+cd $PBS_O_WORKDIR
+module load R/3.1.0
+Rscript scripts/create_model.R $tissue $chrom
