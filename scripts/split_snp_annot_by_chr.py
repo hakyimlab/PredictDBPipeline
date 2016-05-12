@@ -1,8 +1,6 @@
 #! /usr/bin/env python
-
 import sys
 import os
-
 '''
 Script to split a SNP annotation file into multiple files by chromosome.
 
@@ -16,7 +14,7 @@ annot_file_name = os.path.basename(annot_file)
 
 # Make New File Names
 # Expected annotation file ends in .txt
-snps_by_chr_files= [os.path.join('data', 'intermediate', 'annotations', 'snp_annotation', annot_file_name[:-3] + 'chr' + str(i) + '.txt') for i in range(1,23)]
+snps_by_chr_files= [os.path.join('../data', 'intermediate', 'annotations', 'snp_annotation', annot_file_name[:-3] + 'chr' + str(i) + '.txt') for i in range(1,23)]
 snp_by_chr = [open(f, 'w') for f in snps_by_chr_files]
 
 with open(annot_file, 'r') as annot:

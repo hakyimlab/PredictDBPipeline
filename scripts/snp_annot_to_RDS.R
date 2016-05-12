@@ -1,7 +1,7 @@
 "%&%" <- function(a,b) paste(a, b, sep = "")
 library(dplyr)
 
-file_head <- "data/intermediate/annotations/snp_annotation/GTEx_OMNI_genot_1KG_imputed_var_info4_maf01_CR95_CHR_POSb37_ID_REF_ALT_release_v6.chr"
+file_head <- "../data/intermediate/annotations/snp_annotation/GTEx_OMNI_genot_1KG_imputed_var_info4_maf01_CR95_CHR_POSb37_ID_REF_ALT_release_v6.chr"
 
 for (i in 1:22) {
   infile <- file_head %&% i %&% ".txt"
