@@ -12,6 +12,7 @@ import time
 
 input_dir = '../data/input/'
 inter_dir = '../data/intermediate/'
+output_dir = '../data/output/'
 
 # Process Gene Annotation
 gene_annot_stem = 'annotations/gene_annotation/gencode.v19.genes.no-exons.patched_contigs'
@@ -63,6 +64,16 @@ for tissue in tissues:
             time.sleep(2)
 
 # Cat tissue models split by chromosome together, so only one file per tissue
+for tissue in tissues:
+    allResultsFile = output_dir + 'allResults/' + tissue + '.allResults.txt'
+    allBetasFile = output_dir + 'allBetas/' + tissue + '.allBetas.txt'
+    allLogsFile = output_dir + 'allLogs/' + tissue + '.allLogs.txt'
+    if not os.path.isfile(allResultsFile):
+        subprocess.call(['./make_all_results.sh', tissue, allResultsFile])
+    if not os.path.isfile(allBetasFile):
+        subprocess.call(['./make_all_betas.sh', tissue, allBetasFile])
+    if not os.path.isfile(allLogsFile):
+        subprocess.call(['./make_all_logs.sh', tissue, allLogsFile])
 
 # Make databases
 
