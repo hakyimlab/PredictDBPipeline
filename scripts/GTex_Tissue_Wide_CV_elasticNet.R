@@ -16,18 +16,23 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   expression <- expression[, intersect(colnames(expression), rownames(gene_annot))]
   exp_samples <- rownames(expression)
   exp_genes <- colnames(expression)
-
-  set.seed(1209)
+  n_samples <- length(exp_samples)
+  n_genes <- length(exp_genes)
+  seed <- sample(1:2016, 1)
+  log_df <- data.frame(chrom, n_samples, n_genes, seed, n_k_folds, snpset)
+  colnames(log_df) <- c('chr', 'n_samples', 'n_genes', 'seed_for_cv', 'n_folds_cv', 'snpset')
+  write.table(log_df, file = out_dir %&% tis %&% '_chr' %&% chrom %&% '_elasticNet_model_log.txt',quote = FALSE, row.names = FALSE, sep = "\t")
+  set.seed(seed)
   groupid <- sample(1:n_k_folds, length(exp_samples), replace = TRUE)
 
   resultsarray <- array(0, c(length(exp_genes), 9))
   dimnames(resultsarray)[[1]] <- exp_genes
-  resultscol <- c("gene","alpha","cvm","lambda.iteration","lambda.min","n.snps","R2","pval","genename")
+  resultscol <- c("gene", "alpha", "cvm", "lambda.iteration", "lambda.min", "n.snps", "R2", "pval", "genename")
   dimnames(resultsarray)[[2]] <- resultscol
   workingbest <- out_dir %&% "working_TW_" %&% tis %&% "_exp_" %&% n_k_folds %&% "-foldCV_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% "_chr" %&% chrom %&% ".txt"
   write(resultscol, file = workingbest, ncolumns = 9, sep = "\t")
 
-  weightcol = c("gene","rsid","ref","alt","beta","alpha")
+  weightcol <- c("gene","rsid","ref","alt","beta","alpha")
   workingweight <- out_dir %&% "TW_" %&% tis %&% "_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% "_weights_chr" %&% chrom %&% ".txt"
   write(weightcol, file = workingweight, ncol = 6, sep = "\t")
 
@@ -35,7 +40,14 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
     cat(i, "/", length(exp_genes), "\n")
     gene <- exp_genes[i]
     # Reduce genotype data to only include SNPs within 1 megabase of gene in question.
-    cisgenos <- get_cisgenos(gene, gene_annot, snp_annot)
+    # Pulls the genotype for all snps within 1 megabase of the gene.
+    geneinfo <- gene_annot[gene,]
+    start <- geneinfo$start - 1e6
+    end <- geneinfo$end + 1e6
+    # Pull cis-SNP info
+    cissnps <- subset(snp_annot, snp_annot$pos >= start & snp_annot$pos <= end)
+    # Pull cis-SNP genotypes
+    cisgenos <- genotype[,intersect(colnames(genotype), cissnps$varID)]
     if (is.null(dim(cisgenos))) {
       # Skip genes without any cis-SNPS
       bestbetas <- data.frame()
@@ -101,16 +113,4 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
     }
   }
   write.table(resultsarray,file=out_dir %&% "TW_" %&% tis %&% "_chr" %&% chrom %&% "_exp_" %&% n_k_folds %&% "-foldCV_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% ".txt",quote=F,row.names=F,sep="\t")
-}
-
-get_cisgenos <- function(gene, gene_annot, snp_annot) {
-  # Pulls the genotype for all snps within 1 megabase of the gene.
-  geneinfo <- gene_annot[gene,]
-  start <- geneinfo$start - 1e6
-  end <- geneinfo$end + 1e6
-  # Pull cis-SNP info
-  cissnps <- subset(snp_annot, snp_annot$pos >= start & snp_annot$pos <= end)
-  # Pull cis-SNP genotypes
-  cisgenos <- genotype[,intersect(colnames(genotype), cissnps$varID)]
-  return(cisgenos)
 }

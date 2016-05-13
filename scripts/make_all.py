@@ -15,16 +15,16 @@ inter_dir = '../data/intermediate/'
 
 # Process Gene Annotation
 gene_annot_stem = 'annotations/gene_annotation/gencode.v19.genes.no-exons.patched_contigs'
-if not os.path.isfile(inter_dir + gene_annot_stem + '.txt'):
+if not os.path.isfile(inter_dir + gene_annot_stem + '.parsed.txt'):
     print("Parsing gene annotation...")
     print "Using {} for gene_annotation".format(input_dir + gene_annot_stem + '.gtf')
     assert os.path.isfile(input_dir + gene_annot_stem + '.gtf')
     subprocess.call(['./parse_gtf.py', input_dir + gene_annot_stem + '.gtf',
-        inter_dir + gene_annot_stem + '.txt'])
-if not os.path.isfile(inter_dir + gene_annot_stem + '.RDS'):
+        inter_dir + gene_annot_stem + '.parsed.txt'])
+if not os.path.isfile(inter_dir + gene_annot_stem + '.parsed.RDS'):
     print("Turning gene annotation into RDS object...")
-    subprocess.call(['Rscript', 'geno_annot_to_RDS.R', inter_dir + gene_annot_stem + '.txt',
-        inter_dir + gene_annot_stem + '.RDS'])
+    subprocess.call(['Rscript', 'geno_annot_to_RDS.R', inter_dir + gene_annot_stem + '.parsed.txt',
+        inter_dir + gene_annot_stem + '.parsed.RDS'])
 
 # Process SNP Annotation
 snp_annot_stem = 'annotations/snp_annotation/GTEx_OMNI_genot_1KG_imputed_var_info4_maf01_CR95_CHR_POSb37_ID_REF_ALT_release_v6'
@@ -52,6 +52,8 @@ for tissue in tissues:
         print("Transposing {} expression file and saving as RDS object...".format(tissue))
         subprocess.call(['Rscript', 'expr_to_transposed_RDS.R', input_dir + expr_stem + '.txt',
             inter_dir + expr_stem + '.RDS'])
+
+#sys.exit()
 
 # Build model tissue by tissue, chromosome by chromosome
 for tissue in tissues:
