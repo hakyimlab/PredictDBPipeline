@@ -253,7 +253,7 @@ def add_log_data():
 
         def insert_row(self, row):
             # TODO: don't hardcode alpha. Necessary for now b/c logs file does not have alpha column.
-            alpha = 0.5
+            alpha = row['alpha']
             if alpha not in self.dbs:
                 self.dbs[alpha] = DB(self.source_file, alpha)
             self.dbs[alpha].insert_row(row)
