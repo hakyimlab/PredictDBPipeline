@@ -19,9 +19,9 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   n_samples <- length(exp_samples)
   n_genes <- length(exp_genes)
   seed <- sample(1:2016, 1)
-  log_df <- data.frame(chrom, n_samples, n_genes, seed, n_k_folds, snpset, alpha)
-  colnames(log_df) <- c('chr', 'n_samples', 'n_genes', 'seed_for_cv', 'n_folds_cv', 'snpset', 'alpha')
-  write.table(log_df, file = out_dir %&% tis %&% '_chr' %&% chrom %&% '_elasticNet_model_log.txt',quote = FALSE, row.names = FALSE, sep = "\t")
+  log_df <- data.frame(chrom, n_genes, seed, alpha)
+  colnames(log_df) <- c('chr', 'n_genes', 'seed_for_cv', 'alpha')
+  write.table(log_df, file = out_dir %&% tis %&% '_chr' %&% chrom %&% '_elasticNet_model_log.txt', quote = FALSE, row.names = FALSE, sep = "\t")
   set.seed(seed)
   groupid <- sample(1:n_k_folds, length(exp_samples), replace = TRUE)
 

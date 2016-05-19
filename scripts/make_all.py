@@ -35,10 +35,7 @@ if len(os.listdir(inter_dir + 'annotations/snp_annotation')) == 0:
     subprocess.call(['Rscript', 'snp_annot_to_RDS.R'])
 
 # Define Tissues
-tissues = [
-    'Prostate',
-    'Uterus'
-]
+tissues = [f[:-18] for f in os.listdir(input_dir + 'genotypes/')]
 
 # Process genotypes
 for tissue in tissues:
@@ -54,7 +51,11 @@ for tissue in tissues:
         subprocess.call(['Rscript', 'expr_to_transposed_RDS.R', input_dir + expr_stem + '.txt',
             inter_dir + expr_stem + '.RDS'])
 
-#sys.exit()
+# Make meta_data file with info about sample size, etc.
+for tissue in tissues:
+    if not os.path.isfile(output_dir + 'allMetaData/' + tissue + '.allMetaData.txt'):
+        print("Making {} meta data file".format(tissue))
+        subprocess.call(['Rscript', 'get_sample_size.R', tissue])
 
 # Build model tissue by tissue, chromosome by chromosome
 for tissue in tissues:
@@ -62,6 +63,8 @@ for tissue in tissues:
         for chrom in range(1, 23):
             subprocess.call('qsub -v tissue={0},chrom={1} -N build_{0}_model_chr{1} build_tissue_by_chr.pbs'.format(tissue, str(chrom)), shell=True)
             time.sleep(2)
+
+sys.exit()
 
 # Cat tissue models split by chromosome together, so only one file per tissue
 for tissue in tissues:
