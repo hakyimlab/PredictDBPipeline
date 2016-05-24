@@ -15,7 +15,7 @@ SAMPLE_INFO_INCLUDE_CLAUSE = '.allMetaData.'
 BETA_HEADER_TOKENS = {"gene", "rsid", "ref", "alt", "beta", "alpha"}
 RESULTS_HEADER_TOKENS = {"gene", "alpha", "cvm", "lambda.iteration", "lambda.min", "n.snps", "R2", "pval", "genename"}
 LOGS_HEADER_TOKENS = {"chr", "n_genes", "seed_for_cv", "alpha"}
-SAMPLE_INFO_HEADER_TOKENS = {"n_samples", "n_folds_cv", 'snpset', 'resid_db_snp_label'}
+SAMPLE_INFO_HEADER_TOKENS = {"n_samples", "n_folds_cv", "snpset", "rsid_db_snp_label", "alpha"}
 
 import gzip
 import os
@@ -230,7 +230,7 @@ def add_log_data():
 
             self("DROP INDEX IF EXISTS construction_chr")
             self("DROP TABLE IF EXISTS construction")
-            self("CREATE TABLE construction (chr INTEGER, `n.samples` INTEGER, `n.genes` INTEGER, `cv.seed` INTEGER, `n.folds.cv` INTEGER, snpset TEXT)")
+            self("CREATE TABLE construction (chr INTEGER, `n.genes` INTEGER, `cv.seed` INTEGER)")
             self("CREATE INDEX construction_chr ON construction (chr)")
 
 
@@ -245,8 +245,7 @@ def add_log_data():
             self.connection.commit()
 
         def insert_row(self, row):
-            self("INSERT INTO construction VALUES(?, ?, ?, ?, ?, ?)",
-                (row['chr'], row['n_samples'], row['n_genes'], row['seed_for_cv'], row['n_folds_cv'], row['snpset']))
+            self("INSERT INTO construction VALUES(?, ?, ?)", (row['chr'], row['n_genes'], row['seed_for_cv']))
 
     class MetaDB:
         "This handles all the DBs for each source file (tissue type)"
@@ -319,8 +318,7 @@ def add_sample_data():
             self.connection.commit()
 
         def insert_row(self, row):
-            self("INSERT INTO sample_info VALUES(?)",
-                (row['n_samples']))
+            self("INSERT INTO sample_info VALUES(?)", (row['n_samples'],))
 
     class MetaDB:
         "This handles all the DBs for each source file (tissue type)"
@@ -366,6 +364,10 @@ if __name__ == '__main__':
                         help="Subfolder with -allLogs-",
                         default="allLogs")
 
+    parser.add_argument("--meta-data_sub_folder",
+                        help="Subfolder with -allMetaData",
+                        default="allMetaData")
+
     parser.add_argument("--output_folder",
                         help="higher level output folder",
                         default="output")
@@ -379,8 +381,12 @@ if __name__ == '__main__':
                         default=".allResults.")
 
     parser.add_argument("--logs_include_clause",
-                        help="Pattern for results file name to adhere to",
+                        help="Pattern for logs file name to adhere to",
                         default=".allLogs.")
+
+    parser.add_argument("--sample_info_include_clause",
+                        help="Pattern for meta data file name to adhere to",
+                        default=".allMetaData.")
 
     args = parser.parse_args()
     SOURCE_DIR = args.input_folder
@@ -392,6 +398,7 @@ if __name__ == '__main__':
     RESULTS_INCLUDE_CLAUSE = args.results_include_clause
     LOGS_INCLUDE_CLAUSE = args.logs_include_clause
 
-    generate_weights_file()
-    add_extra_data()
-    add_log_data()
+    #generate_weights_file()
+    #add_extra_data()
+    #add_log_data()
+    add_sample_data()

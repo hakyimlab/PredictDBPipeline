@@ -64,7 +64,7 @@ for tissue in tissues:
             subprocess.call('qsub -v tissue={0},chrom={1} -N build_{0}_model_chr{1} build_tissue_by_chr.pbs'.format(tissue, str(chrom)), shell=True)
             time.sleep(2)
 
-sys.exit()
+#sys.exit()
 
 # Cat tissue models split by chromosome together, so only one file per tissue
 for tissue in tissues:
@@ -79,5 +79,6 @@ for tissue in tissues:
         subprocess.call(['./make_all_logs.sh', tissue, allLogsFile])
 
 # Make databases
+#if len(os.listdir(output_dir + 'dbs/')) == 0:
+subprocess.call('qsub -N build_model_dbs generate_db_job.pbs'.format(tissue), shell=True)
 
-# Clean up
