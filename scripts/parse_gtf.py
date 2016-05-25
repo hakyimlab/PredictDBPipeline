@@ -9,8 +9,6 @@ position, and gene end position, and put in a tab delimited file.
 
 Runs from command line.  First argument is the gtf file, second is the
 output file.
-
-Designed for python 2.6
 '''
 try: 
     with open(sys.argv[1], 'r') as gtf:
