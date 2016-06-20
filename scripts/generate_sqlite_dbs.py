@@ -398,7 +398,7 @@ if __name__ == '__main__':
     RESULTS_INCLUDE_CLAUSE = args.results_include_clause
     LOGS_INCLUDE_CLAUSE = args.logs_include_clause
 
-    #generate_weights_file()
-    #add_extra_data()
-    #add_log_data()
+    generate_weights_file()
+    add_extra_data()
+    add_log_data()
     add_sample_data()

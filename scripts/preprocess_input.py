@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# Main script to build prediction model databases from source files
-# to sqlite databases.
+# Script to preprocess all input data before making models.
+# This can be run in an interactive qsub session (qsub -I) or submitted
+# as a job to tarbell.  Only needs to be run once for a given set of input files.
 #
 # Author: Scott Dickinson <spdickinson88@gmail.com>
 
@@ -9,8 +10,6 @@ import glob
 import os
 import subprocess
 import sys
-import time
-
 
 input_dir = '../data/input/'
 inter_dir = '../data/intermediate/'
@@ -69,27 +68,3 @@ for tissue in tissues:
     if not os.path.isfile(output_dir + 'allMetaData/' + tissue + '.allMetaData.txt'):
         print("Making {} meta data file".format(tissue))
         subprocess.call(['Rscript', 'get_sample_size.R', tissue])
-
-# Build model tissue by tissue, chromosome by chromosome--------------/
-for tissue in tissues:
-    if len(glob.glob(inter_dir + 'model_by_chr/TW_' + tissue + '_chr*')) == 0:
-        for chrom in range(1, 23):
-            subprocess.call('qsub -v tissue={0},chrom={1} -N build_{0}_model_chr{1} build_tissue_by_chr.pbs'.format(tissue, str(chrom)), shell=True)
-            time.sleep(2)
-
-# Cat tissue models split by chromosome together, so only one file per tissue
-for tissue in tissues:
-    allResultsFile = output_dir + 'allResults/' + tissue + '.allResults.txt'
-    allBetasFile = output_dir + 'allBetas/' + tissue + '.allBetas.txt'
-    allLogsFile = output_dir + 'allLogs/' + tissue + '.allLogs.txt'
-    if not os.path.isfile(allResultsFile):
-        subprocess.call(['./make_all_results.sh', tissue, allResultsFile])
-    if not os.path.isfile(allBetasFile):
-        subprocess.call(['./make_all_betas.sh', tissue, allBetasFile])
-    if not os.path.isfile(allLogsFile):
-        subprocess.call(['./make_all_logs.sh', tissue, allLogsFile])
-
-# Make databases
-if len(os.listdir(output_dir + 'dbs/')) == 0:
-    subprocess.call('qsub -N build_model_dbs generate_db_job.pbs'.format(tissue), shell=True)
-
