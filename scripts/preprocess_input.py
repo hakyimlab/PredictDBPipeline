@@ -2,10 +2,12 @@
 #
 # Script to preprocess all input data before making models.
 # This can be run in an interactive qsub session (qsub -I) or submitted
-# as a job to tarbell.  Only needs to be run once for a given set of input files.
+# as a job to tarbell.  Only needs to be run once for a given set of
+# input files.
 #
 # Author: Scott Dickinson <spdickinson88@gmail.com>
 
+import argparse
 import glob
 import os
 import subprocess
@@ -18,7 +20,7 @@ output_dir = '../data/output/'
 # Define all tissue models to make.
 tissues = [f[:-18] for f in os.listdir(input_dir + 'genotypes/')]
 
-# Process gene annotation---------------------------------------------/
+# Process gene annotation----------------------------------------------/
 # Extract chromosome number, gene id, gene name, gene start position,
 # and gene end position from gene annotation file (gtf format)
 gene_annot_stem = 'annotations/gene_annotation/gencode.v19.genes.no-exons.patched_contigs'
@@ -33,7 +35,7 @@ if not os.path.isfile(inter_dir + gene_annot_stem + '.parsed.RDS'):
         inter_dir + gene_annot_stem + '.parsed.RDS'])
 
 
-# Process snp annotation----------------------------------------------/
+# Process snp annotation-----------------------------------------------/
 # Splits the snp annotation file by chromosome number, and turns each
 # into an RDS object, to make it faster to read into R.
 snp_annot_stem = 'annotations/snp_annotation/GTEx_OMNI_genot_1KG_imputed_var_info4_maf01_CR95_CHR_POSb37_ID_REF_ALT_release_v6'
@@ -43,7 +45,7 @@ if len(os.listdir(inter_dir + 'annotations/snp_annotation')) == 0:
     subprocess.call(['Rscript', 'snp_annot_to_RDS.R'])
 
 
-# Process genotypes---------------------------------------------------/
+# Process genotypes----------------------------------------------------/
 # For each tissue, split the genotype file into 22 files by chromosome,
 # and only use rows for snps.
 for tissue in tissues:
@@ -51,7 +53,7 @@ for tissue in tissues:
         print("Splitting {} genotype by chromosome, pulling biallelic snps only...".format(tissue))
         subprocess.call(['./split_genotype_by_chr.py', input_dir + 'genotypes/' + tissue + '_Analysis.snps.txt'])
 
-# Process expression phenotypes---------------------------------------/
+# Process expression phenotypes----------------------------------------/
 # Transpose gene expression file to have people as rows, and genes as
 # columns, and save as an RDS file. 
 for tissue in tissues:
@@ -61,7 +63,7 @@ for tissue in tissues:
         subprocess.call(['Rscript', 'expr_to_transposed_RDS.R', input_dir + expr_stem + '.txt',
             inter_dir + expr_stem + '.RDS'])
 
-# Make meta data file-------------------------------------------------/
+# Make meta data file--------------------------------------------------/
 # These text files contain info about the sample size, as well as some
 # of the parameters that were used to build the model.
 for tissue in tissues:

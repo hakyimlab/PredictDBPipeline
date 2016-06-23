@@ -22,7 +22,9 @@ try:
                 gene_fields = line.split('\t')
                 gene_attributes = gene_fields[-1].split('; ')
                 attr_dict = dict(attribute.split() for attribute in gene_attributes if attribute)
-                chr = gene_fields[0]
+                # Some gtf files may have chromosome number with 'chr' prefix
+                # Just want number.
+                chr = gene_fields[0][3:] if "chr" in gene_fields[0] else gene_fields[0]
                 start = gene_fields[3]
                 end = gene_fields[4]
                 id = attr_dict['gene_id'].strip('"')
