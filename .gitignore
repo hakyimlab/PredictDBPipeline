@@ -2,3 +2,8 @@
 ##############
 
 data/
+joblogs/
+
+# Utility Files #
+#################
+.DS_Store
