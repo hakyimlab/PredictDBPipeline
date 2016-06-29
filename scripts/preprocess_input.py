@@ -59,9 +59,14 @@ for tissue in tissues:
 for tissue in tissues:
     expr_stem = 'expression_phenotypes/' + tissue + '_Analysis.expr'
     if not os.path.isfile(inter_dir + expr_stem + '.RDS'):
-        print("Transposing {} expression file and saving as RDS object...".format(tissue))
-        subprocess.call(['Rscript', 'expr_to_transposed_RDS.R', input_dir + expr_stem + '.txt',
-            inter_dir + expr_stem + '.RDS'])
+        if os.path.isfile(input_dir + 'expression_phenotypes/' + tissue + '_Analysis.covariates.txt'):
+            print("Transposing {} expression file, adjusting for covariates and saving as RDS object...").format(tissue)
+            subprocess.call(['Rscript', 'expr_to_transposed_RDS.R', input_dir + expr_stem + '.txt',
+                inter_dir + expr_stem + '.RDS', input_dir + 'expression_phenotypes/' + tissue + '_Analysis.covariates.txt'])
+        else:
+            print("Transposing {} expression file and saving as RDS object...".format(tissue))
+            subprocess.call(['Rscript', 'expr_to_transposed_RDS.R', input_dir + expr_stem + '.txt',
+                inter_dir + expr_stem + '.RDS'])
 
 # Make meta data file--------------------------------------------------/
 # These text files contain info about the sample size, as well as some

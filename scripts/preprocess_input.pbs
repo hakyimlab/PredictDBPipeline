@@ -3,15 +3,13 @@
 # Resource Manager Directives #
 ###############################
 
-### Run using command -v tissue=tissue_name, chrom=chromosome_number
-
 ### Select the shell you would like to script to execute within.
 #PBS -S /bin/bash
 ### Inform the scheduler of the expected runtime, where
 ### walltime=HH:MM:SS.
-#PBS -l walltime=2:00:00
+#PBS -l walltime=4:00:00
 ### Inform the scheduler of the number of CPU cores for your job.
-#PBS -l nodes=1:ppn=1
+#PBS -l nodes=1:ppn=2
 ### Inform the scheduler of the amount of memory you expect
 ### to use. Use units of ‘b’, ‘kb’, ‘mb’, or ‘gb’.
 #PBS -l mem=12gb
@@ -25,4 +23,5 @@
 
 cd /group/im-lab/nas40t2/scott/modelpipeline/scripts/
 module load R/3.1.0
-Rscript ./create_model.R $tissue $chrom
+module load python/2.7.9
+python preprocess_input.py
