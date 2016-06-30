@@ -33,4 +33,4 @@ for tissue in tissues:
 
 # Make databases
 if len(os.listdir(output_dir + 'dbs/')) == 0:
-    subprocess.call('qsub -N build_model_dbs generate_db_job.pbs'.format(tissue), shell=True)
+    subprocess.call('qsub -N build_model_dbs generate_db_job.pbs', shell=True)
