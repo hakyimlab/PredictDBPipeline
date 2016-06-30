@@ -30,7 +30,7 @@ with open(geno_file, 'r') as geno:
         f.write(header)
 
     for line in geno:
-       # First attribute of line is is chr_pos_refAllele_effAllele_build
+        # First attribute of line is is chr_pos_refAllele_effAllele_build
         # Extract this attribute and parse into list
         varID_list = (line.split()[0].split('_'))
         chr = varID_list[0]
