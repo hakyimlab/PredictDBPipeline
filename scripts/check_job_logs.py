@@ -6,7 +6,7 @@ import sys
 
 def relavent_logfiles(tis):
     """Generator yielding output relevant log file name"""
-    p = 'build_' + tis + '_model_chr[1-9][0-9]?_pos_mod_100_[0-9][0-9]?\.o.*'
+    p = 'build_' + tis + '_model_chr[1-9][0-9]?\.o.*'
     for file in os.listdir("../joblogs/"):
         if re.match(p, file):
             yield file
