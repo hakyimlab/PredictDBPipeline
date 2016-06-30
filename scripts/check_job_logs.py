@@ -4,24 +4,25 @@ import os
 import re
 import sys
 
-def relavent_logfiles(tis):
+def relavent_logfiles(jobs_dir):
     """Generator yielding output relevant log file name"""
-    p = 'build_' + tis + '_model_chr[1-9][0-9]?\.o.*'
-    for file in os.listdir("../joblogs/"):
+    p = 'build_.*_model_chr[1-9][0-9]?\.o.*'
+    for file in os.listdir("../joblogs/" + jobs_dir):
         if re.match(p, file):
             yield file
 
 
-def check_job_logs(tis):
-    """Checks all log files for a tissue to make sure they turn out ok
+def check_job_logs(jobs_dir):
+    """Checks all log files in a jobs log directory to make sure they
+    turn out ok.
 
     Makes sure the model script processed all genes it set out to"""
     
     nfiles = 0
     nprobs = 0
-    for file in relavent_logfiles(tis):
+    for file in relavent_logfiles(jobs_dir):
         nfiles += 1
-        with open('../joblogs/' + file, 'r') as lf:
+        with open('../joblogs/' + jobs_dir + file, 'r') as lf:
             # Go to last line.
             for line in lf:
                 pass
