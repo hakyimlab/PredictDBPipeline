@@ -30,18 +30,26 @@ with open(geno_file, 'r') as geno:
         f.write(header)
 
     for line in geno:
-        # First attribute of each line is chr_pos_refAllele_effAllele_build
-        polymorphism_id = (line.split()[0]).split('_')      
-        if len(polymorphism_id[2]) > 1 or len(polymorphism_id[3]) > 1:
+       # First attribute of line is is chr_pos_refAllele_effAllele_build
+        # Extract this attribute and parse into list
+        varID_list = (line.split()[0].split('_'))
+        chr = varID_list[0]
+        refAllele = varID_list[2]
+        effectAllele = varID_list[3]
+        # Skip non_single letter polymorphisms
+        if len(refAllele) > 1 or len(effectAllele) > 1:
             continue
-        snp = '_'.join(polymorphism_id)
-        # Some SNPs have 2 rows for some reason. Attributes are nearly identical.
-        # Only keep first one.
-        if snp in snps:
+        # Skip ambiguous strands
+        if snp_complement[refAllele] == effectAllele:
             continue
-        snps.add(snp)
-        # Pull chromosome number and write line to appropriate file
-        index = int(polymorphism_id[0]) - 1
+        varID = '_'.join(varID_list)
+        # Some snps have 2 rows for some reason. Attributes are nearly
+        # identical. Only keep the first one found.
+        if varID in snps:
+            continue
+        snps.add(varID)
+        # Write line to appropriate file
+        index = int(chr) - 1
         geno_by_chr[index].write(line)
 
 for f in geno_by_chr:
