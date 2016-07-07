@@ -28,7 +28,7 @@ def check_job_logs(jobs_dir):
                 pass
             nums = line.strip().split(' / ')
             assert len(nums) == 2
-            if nums[0] != nums[1] and nums[1] == '0':
+            if nums[0] != nums[1] or nums[1] == '0':
                 nprobs +=1
                 print "Problem with %s" % file
                 print nums
@@ -37,7 +37,7 @@ def check_job_logs(jobs_dir):
                     print "%i files check so far" % nfiles
                     return
     print "%i files found" % nfiles
-    print "All check out"
+    print "%i check out" % (nfiles - nprobs)
 
 if __name__ == "__main__":
     check_job_logs(sys.argv[1])

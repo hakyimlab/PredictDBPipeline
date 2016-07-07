@@ -21,6 +21,7 @@ genotype_by_chr_files = [os.path.join('../data', 'intermediate', 'genotypes',
     string.replace(geno_file_name, "_Analysis", "_chr{}_Analysis".format(i))[:-3] + "biallelic.txt") for i in range(1,23)]
 
 geno_by_chr = [open(f, 'w') for f in genotype_by_chr_files]
+snp_complement = {'A':'T', 'C':'G', 'G':'C', 'T':'A'}
 
 with open(geno_file, 'r') as geno:
     # Write header in each file

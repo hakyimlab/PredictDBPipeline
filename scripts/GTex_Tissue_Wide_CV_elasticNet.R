@@ -69,7 +69,7 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
 
         # Run Cross-Validation over alphalist
         # parallel = TRUE is slower on tarbell for some reason
-        fit <- cv.glmnet(cisgenos, exppheno, nfolds = n_k_folds, alpha = alpha, keep = TRUE, foldid = groupid, parallel = FALSE)
+        fit <- cv.glmnet(cisgenos, as.vector(exppheno), nfolds = n_k_folds, alpha = alpha, keep = TRUE, foldid = groupid, parallel = FALSE)
         
         # Pull info from fit to find the best lambda   
         fit.df <- data.frame(fit$cvm, fit$lambda, 1:length(fit$cvm))

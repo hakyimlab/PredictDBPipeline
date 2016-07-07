@@ -33,7 +33,7 @@ filter_on_qval <- function() {
     qobj <- qvalue(extra_df$pval, fdr.level = 0.05)
     extra_df$qval <- qobj$qvalues
     extra_df$significant <- qobj$significant
-    extra_filtered <- extra_df %>% rename(pred.perf.pval = pval) %>% filter(significant == TRUE)
+    extra_filtered <- extra_df %>% rename(pred.perf.pval = pval) %>% filter(significant == TRUE) %>% select(-significant)
     sig_genes <- extra_filtered$gene
     dbWriteTable(new_conn, "extra", extra_filtered)
     dbGetQuery(new_conn, "CREATE INDEX extra_gene ON extra (gene)")
