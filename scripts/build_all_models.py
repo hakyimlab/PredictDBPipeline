@@ -18,10 +18,10 @@ output_dir = '../data/output/'
 
 # Define all tissue models to make.
 tissues = [f[:-18] for f in os.listdir(input_dir + 'genotypes/')]
-
+alpha = '0.5'
 # Build model tissue by tissue, chromosome by chromosome--------------/
 for tissue in tissues:
     if len(glob.glob(inter_dir + 'model_by_chr/TW_' + tissue + '_chr*')) == 0:
         for chrom in range(1, 23):
-            subprocess.call('qsub -v tissue={0},chrom={1} -N build_{0}_model_chr{1} build_tissue_by_chr.pbs'.format(tissue, str(chrom)), shell=True)
+            subprocess.call('qsub -v tissue={0},chrom={1},alpha={2} -N build_{0}_model_chr{1} build_tissue_by_chr.pbs'.format(tissue, str(chrom), alpha), shell=True)
             time.sleep(2)

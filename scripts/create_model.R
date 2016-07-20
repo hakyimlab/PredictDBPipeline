@@ -3,6 +3,7 @@ source("GTex_Tissue_Wide_CV_elasticNet.R")
 
 tis <- argv[1]
 chrom <- argv[2]
+alpha <- as.numeric(argv[3])
 
 data_dir <- "../data/intermediate/"
 
@@ -12,7 +13,6 @@ gene_annot_RDS <- data_dir %&% "annotations/gene_annotation/gencode.v19.genes.no
 snp_annot_RDS <- data_dir %&% "annotations/snp_annotation/GTEx_OMNI_genot_1KG_imputed_var_info4_maf01_CR95_CHR_POSb37_ID_REF_ALT_release_v6.chr" %&% chrom %&% ".RDS"
 n_k_folds <- 10
 n_k_folds_rep <- 1
-alpha <- 0.5
 out_dir <- data_dir %&% "model_by_chr/"
 snpset <- "1KG_snps"
 
