@@ -2,7 +2,7 @@ library(glmnet)
 library(methods)
 "%&%" <- function(a,b) paste(a, b, sep = "")
 
-TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, n_k_folds_rep, alpha, out_dir, tis, chrom, snpset) {
+TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, n_k_folds_rep, alpha, out_dir, tis, chrom, snpset, window) {
   expression <- readRDS(expression_RDS)
   genotype <- read.table(geno_file, header = TRUE, row.names = 'Id', stringsAsFactors = FALSE)
   # Transpose genotype for glmnet
@@ -42,8 +42,8 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
     # Reduce genotype data to only include SNPs within 1 megabase of gene in question.
     # Pulls the genotype for all snps within 1 megabase of the gene.
     geneinfo <- gene_annot[gene,]
-    start <- geneinfo$start - 1e6
-    end <- geneinfo$end + 1e6
+    start <- geneinfo$start - window
+    end <- geneinfo$end + window
     # Pull cis-SNP info
     cissnps <- subset(snp_annot, snp_annot$pos >= start & snp_annot$pos <= end)
     # Pull cis-SNP genotypes

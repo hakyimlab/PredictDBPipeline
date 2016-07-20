@@ -3,7 +3,7 @@
 # Resource Manager Directives #
 ###############################
 
-### Run using command -v tissue=tissue_name, chrom=chromosome_number, alpha=alpha
+### Run using command -v tissue=tissue_name, chrom=chromosome_number, alpha=alpha, window=window
 
 ### Select the shell you would like to script to execute within.
 #PBS -S /bin/bash
@@ -25,4 +25,4 @@
 
 cd /group/im-lab/nas40t2/scott/modelpipeline/scripts/
 module load R/3.1.0
-Rscript ./create_model.R $tissue $chrom $alpha
+Rscript ./create_model.R $tissue $chrom $alpha $window

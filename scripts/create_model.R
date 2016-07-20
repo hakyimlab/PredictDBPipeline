@@ -4,6 +4,7 @@ source("GTex_Tissue_Wide_CV_elasticNet.R")
 tis <- argv[1]
 chrom <- argv[2]
 alpha <- as.numeric(argv[3])
+window <- as.numeric(argv[4])
 
 data_dir <- "../data/intermediate/"
 
@@ -17,4 +18,4 @@ out_dir <- data_dir %&% "model_by_chr/"
 snpset <- "1KG_snps"
 
 TW_CV_model(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS,
-    n_k_folds, n_k_folds_rep, alpha, out_dir, tis, chrom, snpset)
+    n_k_folds, n_k_folds_rep, alpha, out_dir, tis, chrom, snpset, window)
