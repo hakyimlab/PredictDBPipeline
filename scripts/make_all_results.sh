@@ -3,8 +3,9 @@
 
 tissue=$1
 allResults=$2
+alpha=$3
 i=0
-for resultsfile in $(ls ../data/intermediate/model_by_chr/working_TW_${tissue}_exp_10-foldCV_elasticNet_alpha0.5_1KG_snps_chr*); do
+for resultsfile in $(ls ../data/intermediate/model_by_chr/working_TW_${tissue}_exp_10-foldCV_elasticNet_alpha${alpha}_1KG_snps_chr*); do
         if [ $i -eq 0 ] ; then
                 head -n 1 $resultsfile > $allResults
                 i=1

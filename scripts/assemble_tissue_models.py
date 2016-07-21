@@ -18,16 +18,16 @@ output_dir = '../data/output/'
 
 # Define all tissue models to make.
 tissues = [f[:-18] for f in os.listdir(input_dir + 'genotypes/')]
-
+alpha = sys.argv[1]
 # Cat tissue models split by chromosome together, so only one file per tissue
 for tissue in tissues:
     allResultsFile = output_dir + 'allResults/' + tissue + '.allResults.txt'
     allBetasFile = output_dir + 'allBetas/' + tissue + '.allBetas.txt'
     allLogsFile = output_dir + 'allLogs/' + tissue + '.allLogs.txt'
     if not os.path.isfile(allResultsFile):
-        subprocess.call(['./make_all_results.sh', tissue, allResultsFile])
+        subprocess.call(['./make_all_results.sh', tissue, allResultsFile, alpha])
     if not os.path.isfile(allBetasFile):
-        subprocess.call(['./make_all_betas.sh', tissue, allBetasFile])
+        subprocess.call(['./make_all_betas.sh', tissue, allBetasFile, alpha])
     if not os.path.isfile(allLogsFile):
         subprocess.call(['./make_all_logs.sh', tissue, allLogsFile])
 
