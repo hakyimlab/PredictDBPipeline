@@ -4,6 +4,7 @@ library(methods)
 
 TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, n_k_folds_rep, alpha, out_dir, tis, chrom, snpset, window) {
   expression <- readRDS(expression_RDS)
+  class(expression) <- 'numeric'
   genotype <- read.table(geno_file, header = TRUE, row.names = 'Id', stringsAsFactors = FALSE)
   # Transpose genotype for glmnet
   genotype <- t(genotype)
