@@ -24,5 +24,6 @@ window = '1e6'
 for tissue in tissues:
     if len(glob.glob(inter_dir + 'model_by_chr/TW_' + tissue + '_chr*')) == 0:
         for chrom in range(1, 23):
+            print("Tissue: " + tissue + " chromosome: " + str(chrom))
             subprocess.call('qsub -v tissue={0},chrom={1},alpha={2},window={3} -N {0}_model_chr{1} build_tissue_by_chr.pbs'.format(tissue, str(chrom), alpha, window), shell=True)
             time.sleep(2)
