@@ -33,7 +33,7 @@ def check_job_logs(jobs_dir):
             nums = line.strip().split(' / ')
             assert len(nums) == 2
             if nums[0] != nums[1] or nums[1] == '0':
-                nprobs +=1
+                nprobs += 1
                 print "Problem with %s" % file
                 print nums
                 if nprobs > 20:
