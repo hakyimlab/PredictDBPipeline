@@ -22,6 +22,10 @@ def check_job_logs(jobs_dir):
     nprobs = 0
     for file in relavent_logfiles(jobs_dir):
         nfiles += 1
+        if os.stat('../joblogs/' + jobs_dir + file).st_size == 0:
+            # File is empty
+            nprobs += 1
+            print "%s is empty." % file
         with open('../joblogs/' + jobs_dir + file, 'r') as lf:
             # Go to last line.
             for line in lf:
