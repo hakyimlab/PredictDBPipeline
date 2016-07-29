@@ -57,7 +57,9 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
       minorsnps <- subset(colMeans(cisgenos), colMeans(cisgenos, na.rm = TRUE) > 0)
       minorsnps <- names(minorsnps)
       cisgenos <- cisgenos[,minorsnps]
-      if (is.null(dim(cisgenos)) | dim(cisgenos)[2] == 0){
+      if (is.null(dim(cisgenos))) {
+        bestbetas <- data.frame()
+      } else if (dim(cisgenos)[2] == 0) {
         # Skip genes with <2 cis-SNPs in dataset
         bestbetas <- data.frame()
       } else {
