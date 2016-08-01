@@ -7,6 +7,9 @@ filter_on_qval <- function() {
   DB_DIR <- "../data/output/dbs/"
   driver <- dbDriver("SQLite")
 
+  # Read in gene annotation info, filter rows for protein coding only
+  gene_annot <- readRDS('../data/intermediate/annotations/gene_annotation/gencode.v19.genes.no-exons.patched_contigs.parsed.RDS')
+  gene_annot <- gene_annot %>% filter(gene_type == 'protein_coding')
   for (db_file in list.files(DB_DIR)) {
     print("Processing " %&% db_file)
     # Rename file and set correct paths
@@ -30,6 +33,9 @@ filter_on_qval <- function() {
 
     # Read in extra table, calculate q-values, and filter rows.
     extra_df <- dbReadTable(old_conn, "extra", NULL)
+    # Include protein coding genes only.
+    extra_df <- extra_df %>% filter(gene %in% gene_annot$gene_id)
+    # Find qvalues
     qobj <- qvalue(extra_df$pval, fdr.level = 0.05)
     extra_df$qval <- qobj$qvalues
     extra_df$significant <- qobj$significant
