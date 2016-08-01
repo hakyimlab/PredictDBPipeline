@@ -13,7 +13,7 @@ output file.
 try: 
     with open(sys.argv[1], 'r') as gtf:
         with open(sys.argv[2], 'w') as out:
-            out_header = '\t'.join(['chr', 'gene_id', 'gene_name', 'start', 'end']) + '\n'
+            out_header = '\t'.join(['chr', 'gene_id', 'gene_name', 'start', 'end', 'gene_type']) + '\n'
             out.write(out_header)
             for line in gtf:
                 # Skip comments
@@ -29,7 +29,8 @@ try:
                 end = gene_fields[4]
                 id = attr_dict['gene_id'].strip('"')
                 name = attr_dict['gene_name'].strip('"')
-                out_line = '\t'.join([chr, id, name, start, end]) + '\n'
+                type = attr_dict['gene_type'].strip('"')
+                out_line = '\t'.join([chr, id, name, start, end, type]) + '\n'
                 out.write(out_line)
 except IOError as e:
     print 'Operation failed: %s' % e.strerror
