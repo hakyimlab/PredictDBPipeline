@@ -20,6 +20,9 @@ try:
                 if line[0] == '#':
                     continue
                 gene_fields = line.split('\t')
+                # Exclude transcript and exon rows
+                if gene_fields[2] != 'gene':
+                    continue
                 gene_attributes = gene_fields[-1].split('; ')
                 attr_dict = dict(attribute.split() for attribute in gene_attributes if attribute)
                 # Some gtf files may have chromosome number with 'chr' prefix
