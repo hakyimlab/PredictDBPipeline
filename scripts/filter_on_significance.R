@@ -21,8 +21,9 @@ filter_on_qval <- function() {
     old_conn <- dbConnect(drv = driver, dbname = old_path)
     new_conn <- dbConnect(drv = driver, dbname = new_path)
 
-    # Copy over construction and sample_info tables
-    construction_df <- dbReadTable(old_conn, "construction", NULL)
+    # Copy over construction and sample_info tables and drop `n.genes` column.
+    # n.genes refers to all genes, and really just want protein coding.
+    construction_df <- dbReadTable(old_conn, "construction", NULL) %>% select(-n.genes)
     dbWriteTable(new_conn, "construction", construction_df)
     dbGetQuery(new_conn, "CREATE INDEX construction_chr ON construction (chr)")
     sample_info_df <- dbReadTable(old_conn, "sample_info", NULL)
@@ -37,9 +38,9 @@ filter_on_qval <- function() {
     extra_df <- extra_df %>% filter(gene %in% gene_annot$gene_id)
     # Find qvalues
     qobj <- qvalue(extra_df$pval, fdr.level = 0.05)
-    extra_df$qval <- qobj$qvalues
+    extra_df$pred.perf.qval <- qobj$qvalues
     extra_df$significant <- qobj$significant
-    extra_filtered <- extra_df %>% rename(pred.perf.pval = pval) %>% filter(significant == TRUE) %>% select(-significant)
+    extra_filtered <- extra_df %>% rename(pred.perf.pval = pval, n.snps.in.model = n.snps, pred.perf.R2 = R2) %>% filter(significant == TRUE) %>% select(-significant)
     sig_genes <- extra_filtered$gene
     dbWriteTable(new_conn, "extra", extra_filtered)
     dbGetQuery(new_conn, "CREATE INDEX extra_gene ON extra (gene)")
@@ -48,7 +49,7 @@ filter_on_qval <- function() {
 
     # Read in weights table, drop all rows pertaining to insignificant genes.
     weights_df <- dbReadTable(old_conn, "weights", NULL)
-    weights_filtered <- weights_df %>% filter(gene %in% sig_genes)
+    weights_filtered <- weights_df %>% filter(gene %in% sig_genes) %>% select(one_of(c("rsid", "gene", "weight", "ref_allele", "eff_allele")))
     dbWriteTable(new_conn, "weights", weights_filtered)
     dbGetQuery(new_conn, "CREATE INDEX weights_rsid ON weights (rsid)")
     dbGetQuery(new_conn, "CREATE INDEX weights_gene ON weights (gene)")
