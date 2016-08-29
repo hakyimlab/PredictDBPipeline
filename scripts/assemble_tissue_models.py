@@ -24,12 +24,15 @@ for tissue in tissues:
     allResultsFile = output_dir + 'allResults/' + tissue + '.allResults.txt'
     allBetasFile = output_dir + 'allBetas/' + tissue + '.allBetas.txt'
     allLogsFile = output_dir + 'allLogs/' + tissue + '.allLogs.txt'
+    allCovariancesFile = output_dir + 'allCovariances/' + tissue + 'allCovariances.txt'
     if not os.path.isfile(allResultsFile):
         subprocess.call(['./make_all_results.sh', tissue, allResultsFile, alpha])
     if not os.path.isfile(allBetasFile):
         subprocess.call(['./make_all_betas.sh', tissue, allBetasFile, alpha])
     if not os.path.isfile(allLogsFile):
         subprocess.call(['./make_all_logs.sh', tissue, allLogsFile])
+    if not os.path.isfile(allCovariancesFile):
+        subprocess.call(['./make_all_covariances.sh', tissue, allCovariancesFile])
 
 # Make databases
 if len(os.listdir(output_dir + 'dbs/')) == 0:

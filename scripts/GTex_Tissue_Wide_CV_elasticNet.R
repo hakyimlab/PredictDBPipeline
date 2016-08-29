@@ -37,6 +37,8 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   workingweight <- out_dir %&% "TW_" %&% tis %&% "_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% "_weights_chr" %&% chrom %&% ".txt"
   write(weightcol, file = workingweight, ncol = 6, sep = "\t")
 
+  covariance_out <- out_dir %&% tis %&% '_chr' %&% chrom %&% '_snpset_' %&% snpset %&% '_alpha_' %&% alpha %&% "_covariances.txt"
+
   for (i in 1:length(exp_genes)) {
     cat(i, "/", length(exp_genes), "\n")
     gene <- exp_genes[i]
@@ -102,6 +104,7 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
       bestbetalist <- names(bestbetas)
       bestbetainfo <- snp_annot[bestbetalist,]
       betatable <- as.matrix(cbind(bestbetainfo,bestbetas))
+      write_covariance(gene, cisgenos, betatable[,"rsid"], betatable[,"varID"], covariance_out)
       # Output "gene", "rsid", "refAllele", "effectAllele", "beta"
       # For future: To change rsid to the chr_pos_ref_alt_build label, change "rsid" below to "varID".
       betafile<-cbind(gene,betatable[,"rsid"],betatable[,"refAllele"],betatable[,"effectAllele"],betatable[,"bestbetas"], alpha)
@@ -117,3 +120,16 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   }
   write.table(resultsarray,file=out_dir %&% "TW_" %&% tis %&% "_chr" %&% chrom %&% "_exp_" %&% n_k_folds %&% "-foldCV_elasticNet_alpha" %&% alpha %&% "_" %&% snpset %&% ".txt",quote=F,row.names=F,sep="\t")
 }
+
+write_covariance <- function(gene, cisgenos, model_rsids, model_varIDs, covariance_out) {
+  model_geno <- cisgenos[,model_varIDs, drop=FALSE]
+  geno_cov <- cov(model_geno)
+  cov_df <- data.frame(gene=character(),rsid1=character(),rsid2=character(), covariance=double())
+  for (i in 1:length(model_rsids)) {
+    for (j in i:length(model_rsids)) {
+      cov_df <- rbind(cov_df, data.frame(gene=gene,rsid1=model_rsids[i], rsid2=model_rsids[j], covariance=geno_cov[i,j]))
+    }
+  }
+  write.table(cov_df, file = covariance_out, append = TRUE, quote = FALSE, col.names = FALSE, row.names = FALSE, sep = " ")
+}
+
