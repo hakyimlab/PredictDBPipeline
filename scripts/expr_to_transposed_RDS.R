@@ -6,7 +6,7 @@ expression <- read.table(expressionfile, stringsAsFactors = FALSE,
     header = TRUE, row.names = 1)
 expression <- t(expression)
 # Presence of covariate file suggests to correct for PEER factors, etc.
-if (length(argv == 3)) {
+if (length(argv) == 3) {
     covariatefile <- argv[3]
     covariate <- read.table(covariatefile, stringsAsFactors = FALSE,
     header = TRUE, row.names = 1)
