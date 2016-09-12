@@ -29,17 +29,17 @@ SNP_COMPLEMENT = {'A':'T', 'C':'G', 'G':'C', 'T':'A'}
 HEADER_FIELDS = ['chr','pos','varID','refAllele','effectAllele','rsid']
 
 def split_snp_annot(annot_file, out_prefix):
-    # Make New File Names
-    # Expected annotation file ends in .txt
+    # Make output file names from prefix.
     snps_by_chr_files= [out_prefix + 'chr' + str(i) + '.txt' for i in range(1,23)]
+    # Open connection to each output file
     snp_by_chr = [open(f, 'w') for f in snps_by_chr_files]
-
+    # Write header in each file.
+    header = '\t'.join(HEADER_FIELDS)+'\n'
+    for f in snp_by_chr:
+        f.write(header)
     with open(annot_file, 'r') as ann:
-        # Write header in each file
+        # Skip header from input file
         ann.readline()
-        header = '\t'.join(HEADER_FIELDS)+'\n'
-        for f in snp_by_chr:
-            f.write(header)
         # Extract rows from input and write to body in appropriate output.
         for line in ann:
             attrs = line.split()
@@ -60,7 +60,7 @@ def split_snp_annot(annot_file, out_prefix):
             index = int(chr) - 1
             row = '\t'.join([chr,pos,varID,refAllele,effectAllele,rsid])+'\n'
             snp_by_chr[index].write(row)
-    # Close each output
+    # Close connection to each output file.
     for f in snp_by_chr:
         f.close()
 
