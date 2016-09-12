@@ -30,7 +30,7 @@ HEADER_FIELDS = ['chr','pos','varID','refAllele','effectAllele','rsid']
 
 def split_snp_annot(annot_file, out_prefix):
     # Make output file names from prefix.
-    snps_by_chr_files= [out_prefix + 'chr' + str(i) + '.txt' for i in range(1,23)]
+    snps_by_chr_files= [out_prefix + '.chr' + str(i) + '.txt' for i in range(1,23)]
     # Open connection to each output file
     snp_by_chr = [open(f, 'w') for f in snps_by_chr_files]
     # Write header in each file.
