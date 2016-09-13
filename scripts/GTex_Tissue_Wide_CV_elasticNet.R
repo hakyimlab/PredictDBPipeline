@@ -42,59 +42,64 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   for (i in 1:length(exp_genes)) {
     cat(i, "/", length(exp_genes), "\n")
     gene <- exp_genes[i]
-    # Reduce genotype data to only include SNPs within 1 megabase of gene in question.
-    # Pulls the genotype for all snps within 1 megabase of the gene.
+    # Reduce genotype data to only include SNPs within specified window of gene.
     geneinfo <- gene_annot[gene,]
     start <- geneinfo$start - window
     end <- geneinfo$end + window
     # Pull cis-SNP info
     cissnps <- subset(snp_annot, snp_annot$pos >= start & snp_annot$pos <= end)
     # Pull cis-SNP genotypes
-    cisgenos <- genotype[,intersect(colnames(genotype), cissnps$varID)]
-    if (is.null(dim(cisgenos))) {
-      # Skip genes without any cis-SNPS
+    cisgenos <- genotype[,intersect(colnames(genotype), cissnps$varID), drop = FALSE]
+    # Reduce cisgenos to only include SNPs with at least 1 minor allele in dataset
+    cm <- colMeans(cisgenos, na.rm = TRUE)
+    minorsnps <- subset(colMeans(cisgenos), cm > 0 & cm < 2)
+    minorsnps <- names(minorsnps)
+    cisgenos <- cisgenos[,minorsnps, drop = FALSE]
+    if (ncol(cisgenos) < 2) {
+      # Need 2 or more cis-snps for glmnet.
       bestbetas <- data.frame()
     } else {
-      # Reduce cisgenos to only include SNPs with at least 1 minor allele in dataset
-      minorsnps <- subset(colMeans(cisgenos), colMeans(cisgenos, na.rm = TRUE) > 0)
-      minorsnps <- names(minorsnps)
-      cisgenos <- cisgenos[,minorsnps]
-      if (is.null(dim(cisgenos))) {
-        bestbetas <- data.frame()
-      } else if (dim(cisgenos)[2] == 0) {
-        # Skip genes with <2 cis-SNPs in dataset
-        bestbetas <- data.frame()
-      } else {
-        # Pull expression data for gene
-        exppheno <- expression[,gene]
-        # Scale for fastLmPure to work properly
-        exppheno <- scale(exppheno, center = TRUE, scale = TRUE) 
-        exppheno[is.na(exppheno)] <- 0
-        rownames(exppheno) <- rownames(expression)
-
-        # Run Cross-Validation over alphalist
-        # parallel = TRUE is slower on tarbell for some reason
-        fit <- cv.glmnet(as.matrix(cisgenos), as.vector(exppheno), nfolds = n_k_folds, alpha = alpha, keep = TRUE, foldid = groupid, parallel = FALSE)
-        
-        # Pull info from fit to find the best lambda   
-        fit.df <- data.frame(fit$cvm, fit$lambda, 1:length(fit$cvm))
-        # Needs to be min or max depending on cv measure (MSE min, AUC max, ...)
-        best.lam <- fit.df[which.min(fit.df[,1]),]
-        cvm.best <- best.lam[,1]
-        lambda.best <- best.lam[,2]
-        # Position of best lambda in cv.glmnet output
-        nrow.best <- best.lam[,3]
-        # Get the betas from the best lambda value
-        ret <- as.data.frame(fit$glmnet.fit$beta[,nrow.best])
-        ret[ret == 0.0] <- NA
-        # Pull the non-zero betas from model
-        bestbetas <- as.vector(ret[which(!is.na(ret)),])
-        names(bestbetas) <- rownames(ret)[which(!is.na(ret))]
-        # Pull out the predictions at the best lambda value.    
-        pred.mat <- fit$fit.preval[,nrow.best]
+      # Pull expression data for gene
+      exppheno <- expression[,gene]
+      # Scale for fastLmPure to work properly
+      exppheno <- scale(exppheno, center = TRUE, scale = TRUE) 
+      exppheno[is.na(exppheno)] <- 0
+      rownames(exppheno) <- rownames(expression)      
+      # Run Cross-Validation
+      # parallel = TRUE is slower on tarbell
+      bestbetas <- tryCatch(
+        { fit <- cv.glmnet(as.matrix(cisgenos),
+                          as.vector(exppheno),
+                          nfolds = n_k_folds,
+                          alpha = alpha,
+                          keep = TRUE,
+                          foldid = groupid,
+                          parallel = FALSE)
+          # Pull info from fit to find the best lambda   
+          fit.df <- data.frame(fit$cvm, fit$lambda, 1:length(fit$cvm))
+          # Needs to be min or max depending on cv measure (MSE min, AUC max, ...)
+          best.lam <- fit.df[which.min(fit.df[,1]),]
+          cvm.best <- best.lam[,1]
+          lambda.best <- best.lam[,2]
+          # Position of best lambda in cv.glmnet output
+          nrow.best <- best.lam[,3]
+          # Get the betas from the best lambda value
+          ret <- as.data.frame(fit$glmnet.fit$beta[,nrow.best])
+          ret[ret == 0.0] <- NA
+          # Pull the non-zero betas from model
+          as.vector(ret[which(!is.na(ret)),])
+        },
+        error = function(cond) {
+          message('Error with gene ' %&% gene %&% ', index ' %&% i)
+          message(geterrmessage())
+          return(data.frame())
         }
-    }
+      )
+    } 
     if (length(bestbetas) > 0) {
+      names(bestbetas) <- rownames(ret)[which(!is.na(ret))]
+      # Pull out the predictions at the best lambda value.    
+      pred.mat <- fit$fit.preval[,nrow.best]
       res <- summary(lm(exppheno~pred.mat))
       genename <- as.character(gene_annot[gene, 3])
       rsq <- res$r.squared
