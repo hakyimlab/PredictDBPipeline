@@ -2,7 +2,7 @@ library(glmnet)
 library(methods)
 "%&%" <- function(a,b) paste(a, b, sep = "")
 
-TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, n_k_folds_rep, alpha, out_dir, tis, chrom, snpset, window) {
+TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, alpha, out_dir, tis, chrom, snpset, window) {
   expression <- readRDS(expression_RDS)
   class(expression) <- 'numeric'
   genotype <- read.table(geno_file, header = TRUE, row.names = 'Id', stringsAsFactors = FALSE)
@@ -90,6 +90,7 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
           as.vector(ret[which(!is.na(ret)),])
         },
         error = function(cond) {
+          # Should fire only when all predictors have 0 variance.
           message('Error with gene ' %&% gene %&% ', index ' %&% i)
           message(geterrmessage())
           return(data.frame())
