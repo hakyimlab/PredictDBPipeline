@@ -7,7 +7,6 @@
 #
 # Author: Scott Dickinson <spdickinson88@gmail.com>
 
-import argparse
 import glob
 import os
 import subprocess
