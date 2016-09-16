@@ -113,7 +113,7 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
       write_covariance(gene, cisgenos, betatable[,"rsid"], betatable[,"varID"], covariance_out)
       # Output "gene", "rsid", "refAllele", "effectAllele", "beta"
       # For future: To change rsid to the chr_pos_ref_alt_build label, change "rsid" below to "varID".
-      betafile<-cbind(gene,betatable[,"rsid"],betatable[,"refAllele"],betatable[,"effectAllele"],betatable[,"bestbetas"], alpha)
+      betafile <- cbind(gene,betatable[,"rsid"],betatable[,"refAllele"],betatable[,"effectAllele"],betatable[,"bestbetas"], alpha)
       # Transposing betafile necessary for correct output from write() function
       write(t(betafile), file = workingweight, ncolumns = 6, append = TRUE, sep = "\t")
       write(resultsarray[gene,], file = workingbest, ncolumns = 9, append = TRUE, sep = "\t")

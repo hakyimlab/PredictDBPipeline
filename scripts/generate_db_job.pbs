@@ -5,7 +5,7 @@
 
 ### Select the shell you would like the script to execute within.
 #PBS -S /bin/bash
-### Inform the scheduler of the expected rutime, where
+### Inform the scheduler of the expected runtime, where
 ### walltime=HH:MM:SS.
 #PBS -l walltime=3:00:00
 ### Inform the scheduler of the number of CPU cores for your job.
