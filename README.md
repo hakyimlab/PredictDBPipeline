@@ -80,6 +80,8 @@ This pipeline takes 4 different sets of input data:
     - A tab delimited file, with a header row, first column being the
     ensembl ID of the gene, and all remaining columns being individual
     ids.  The values indicate the expresion levels of the gene.
+- Covariate data for the expression.
+    - A tab delimited text file,
 
 ### Preprocessed Data
 
@@ -168,16 +170,159 @@ Note: run all scripts from scripts directory.
 
 1. Gene annotation. Use the script `parse_gtf.py` with first argument
 the path to the annotation file, and second argument the file output.
-    - Run
-    > ./parse_gtf.py ../data/input/annotations/gene_annotation/{gene_annot_file} \
-    ../data/intermediate/annotations/gene_annotation/{gene_annot_output}
-
+    1. Run
+    ```
+    ./parse_gtf.py ../data/input/annotations/gene_annotation/{gene_annot.gtf} \
+        ../data/intermediate/annotations/gene_annotation/{gene_annot.parsed.txt}
+    ```
+        - This will create a new tab-delimited text file with only the necessary
+        features for the model creation.
+    2. Run
+    ```
+    Rscript geno_annot_to_RDS.R ../data/intermediate/annotations/gene_annotation/{gene_annot.parsed.txt} \
+        ../data/intermediate/annotations/gene_annotation/{gene_annot.RDS}
+    ```
+        - This will create an RDS object out of the gene annotation file
+        that can be read into R very quickly.
 2. SNP annotation.
-
+    1. Run
+    ```
+    ./split_snp_annot_by_chr.py ../data/input/annotations/snp_annotation/{snp_annot.txt} \
+    ../data/intermediate/annotations/snp_annotation/{snp_annot}
+    ```
+        - This will split the snp annotation file into 22 files, separated
+    by chromosome.  The first argument is the input file, and the second
+    argument is the prefix for the output.  The files produced will
+    append `.chrN.txt` to this prefix, where `N` is the chromosome
+    number.
+    2. Next, run
+    ```
+    ./snp_annot_to_RDS.R ../data/intermediate/annotations/snp_annotation/{snp_annot}.chr
+    ```
+        - This will turn each of the SNP annotation files into RDS objects to be
+    used when we're selecting features for the model.
 3. Genotype Files.
-
+    1. For each genotype file, run
+    ```
+    ./split_genotype_by_chr.py ../data/input/genotypes/{genotype.txt} \
+        ../data/intermediate/genotypes/{genotype}
+    ```
+        - This will split the genotype files up by chromosome.  The first
+        argument is the input file, the second argument is the prefix
+        for the outputs.  The script will append `.chrN.txt` to these
+        files where `N` is the chromosome number.
 4. Expression Files.
+    1. If you have covariate files, as well as expression files, run
+    ```
+    Rscript expr_to_transposed_RDS.R ../data/input/expression_phenotypes/{expression_file}.txt \
+        ../data/intermediate/expression_phenotypes/{expression_file}.RDS \
+        ../data/input/expression_phenotypes/{covariate_file_name}
+    ```
+        - This will first transpose the expression data to have rows as
+        people and genes as columns.  Then it performs the a linear regression
+        between the covariates and the column vectors of the expression data.
+        The residuals are then extracted from the linear model, and that
+        is used as the new expression data.  The output file is an RDS
+        object. Here the first argument is the input file, the second is
+        the destination output file, and the third is the covariate file.
+    2. If you do not have covariate data, run the same command as above,
+    but do not include a third argument.
+5. Creating meta data file.
+    1. This will simply be a log of the sample size and the parameters
+    you used for the model stored in a tab-delimited text file.  Run the
+    `create_meta_data.py` script with the following arguments:
+        - `--geno` the path to the input genotype file.  Used to
+        calculate sample size.
+        - `--expr` the path to the input expression file. Used to
+        calculate sample size.
+        - `--snpset` the SNP set for the study.  E.g. '1KG' for 1000
+        Genomes and 'HapMap' for HapMap.
+        - `--alpha` the mixing parameter glmnet will use to train the
+        model.  Must be a number between 0.0 and 1.0.  Default value is
+        0.5
+        - `--n_k_folds` the number of folds to use in cross-validation.
+        Default value is 10.
+        - `--rsid_label` version of the rsid numbers.  This should be
+        name of the 7th column in the snp annotation file.
+        - `--window` how far to look upstream of the TSS and downstream
+        of the TTS for consideration of ciseqtls.
+        - `--out_prefix` the prefix for the output file.  Include the
+        full path to `data/output/allMetaData/` and then what you'd like
+        to label the analysis (e.g. Lung, Liver, etc.).  The script will
+        append `.allMetaData.txt` for dependency reasons.
+
+Since you may be rerunning these analyses many times, it would make sense
+to run all of these commands in a single script.  See
+`preprocess_input.py` for a way to do this with GTEx data.
+
 
 #### Training Models
 
+Right now, you will have to modify the scripts `build_all_models.py`,
+`create_model.R` and `build_tissue_by_chr.pbs` to specify the parameters
+and file names to use.
+
+`build_all_models.py` is a script that will submit jobs to the computing
+cluster.  For GTEx, we had 44 tissues to study, and we split up the
+analysis by chromosome, which resulted in submitting 968 jobs.  The
+common aspects of every job are specified in `build_tissue_by_chr.pbs`,
+but controls for which tissue, chromosome, and window size are controlled
+in `build_all_models.py`.  These arguments are then defined for the pbs
+script when the job is submitted.
+
+When editing the pbs script, be sure to edit the paths to the stdout,
+stderr, and directory for where all the scripts are located.
+
+The `pbs` job will call the R script `create_model.R`.  Many parameters
+in this script are still hard coded, and will likely have to be changed
+if you are adopting this for studies besides GTEx.
+
+It is very important to note that the value given for 'tissue' will be
+used in file names and group tissues together.
+
+I'm working on refactoring this step in the process to make the api
+more user friendly, but it will take some time and testing.
+
+Once all of the jobs are finished, inspect the standard out and standard
+error files to check for any funny business.  If successful, the stdout
+files will just include an output of which gene in the expression file
+it is analyzing.  If all goes well, the last line should be
+`n_genes / n_genes`, where `n_genes` is the number of expressed genes on
+that chromosome.
+
+If you put all of the stdout and stderr files into a subdirectory within
+the `joblogs/` and kept the stdout files to have the pattern
+`_model_chrN.o` in the name, you can use the script `check_job_logs.py`
+to make sure all the stdout files are ok.  Just supply the name of
+the subdirectory to inspect within `joblogs`.
+
+#### Putting everything together
+
+Edit the script `assemble_tissue_models.py` so that the variable
+`tissues` is a list which holds the tissue identifier for each model you
+are building.
+
+Also edit the script `generate_db_job.pbs` to make sure all the
+stdout, stderr files and working directory for the script are correct.
+
+Running the script `assemble_tissue_models.py` will then take all of the
+files produced by the many cluster and concatenate all the separate
+chromosome files together.  The step of this script submits another
+cluster job to create the sqlite databases.
+
+#### Filtering out non-significant results/protein-coding only
+
+Once the databases are created, go to the scripts directory, enter an
+interactive R session and run the following:
+
+```
+> source("filter_on_significance.R")
+> filter_on_qval()
+```
+
+This will create databases with significant protein-coding models only.
+Original databases with all models now have `_all.db` as a suffix.
+
+And that's it! Your databases are now ready for use with PrediXcan and
+MetaXcan.
 
