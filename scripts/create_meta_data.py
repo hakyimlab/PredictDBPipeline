@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import argparse
 
 HEADER_FIELDS = ['n_samples', 'n_folds_cv', 'snpset', 'rsid_dnp_snp_label',
@@ -22,7 +23,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--geno', required=True, help='genotype file for sample size')
     parser.add_argument('--expr', required=True, help='expression file for sample size')
-    parser.add_arugment('--snpset', required=True, help='SNP set used for analysis (e.g. 1KG, HapMap')
+    parser.add_argument('--snpset', required=True, help='SNP set used for analysis (e.g. 1KG, HapMap')
     parser.add_argument('--alpha', default='0.5', help='Alpha value for glmnet')
     parser.add_argument('--n_k_folds', default='10', help='Number of folds for cross-validation')
     parser.add_argument('--rsid_label', required=True, help='rsid version number')
@@ -32,9 +33,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     out_file = args.out_prefix + '.allMetaData.txt'
-    n_samples = get_sample_size(args.expr, args.geno)
+    n_samples = str(get_sample_size(args.expr, args.geno))
     meta_data = [n_samples, args.n_k_folds, args.snpset, args.rsid_label,
-                args.alpha. args.window]
+                args.alpha, args.window]
     with open(out_file, 'w') as out:
         out.write('\t'.join(HEADER_FIELDS) + '\n')
         out.write('\t'.join(meta_data) + '\n')

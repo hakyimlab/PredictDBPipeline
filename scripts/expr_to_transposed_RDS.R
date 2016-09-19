@@ -11,14 +11,14 @@ argv <- commandArgs(trailingOnly = TRUE)
 expressionfile <- argv[1]
 RDSout <- argv[2]
 # Presence of covariate file suggests to correct for PEER factors, etc.
-covariatefile <- ifelse(length(argv) == 3, argv[3], NULL)
+covariatefile <- ifelse(length(argv) == 3, argv[3], NA)
 
 expression <- read.table(expressionfile, stringsAsFactors = FALSE,
     header = TRUE, row.names = 1)
 # Transpose expression.
 expression <- t(expression)
 
-if (!is.null(covariatefile)) {
+if (!is.na(covariatefile)) {
   # Correct expression data for covariates.
   covariate <- read.table(covariatefile, stringsAsFactors = FALSE,
     header = TRUE, row.names = 1)
