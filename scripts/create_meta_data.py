@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import argparse
 
-HEADER_FIELDS = ['n_samples', 'n_folds_cv', 'snpset', 'rsid_dnp_snp_label',
+HEADER_FIELDS = ['n_samples', 'n_folds_cv', 'snpset', 'rsid_db_snp_label',
                 'alpha', 'window']
 
 def get_sample_size(expression_file, genotype_file):

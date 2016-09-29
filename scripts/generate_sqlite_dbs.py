@@ -22,6 +22,7 @@ import os
 import sys
 import sqlite3
 
+
 def smart_open(source_file):
     if source_file.endswith('.txt'):
         return open(source_file)
@@ -31,23 +32,49 @@ def smart_open(source_file):
         print "error: source file names should end in .txt or .gz; %s doesn't comply. exiting."%source_file
         sys.exit(1)
 
+
 def smart_list(source_dir, including):
     source_files = [x for x in os.listdir(source_dir) if including in x]
     if len(source_files) == 0:
         print "warning: no recognized source files (i.e., including %s) on %s"%(including, source_dir)
     return sorted(source_files)
 
+
+def source_files(source_dir, include_clause):
+    "List all relevant source files."
+    for x in in smart_list(source_dir, including=include_clause):
+        yield os.path.join(source_dir, x)
+
+
+def upconvert(x):
+    for f in (int, float):
+        try:
+            return f(x)
+        except ValueError:
+            pass
+    return x
+
+
+class MetaDB:
+    "This handles all the DBs for each source file (tissue type)"
+    def __init__(self, source_file):
+        self.source_file = source_file
+        self.dbs = {} # alpha -> DB object
+
+    def insert_row(self, row):
+        alpha = row['alpha']
+        if alpha not in self.dbs:
+            self.dbs[alpha] = DB(self.source_file, alpha)
+        self.dbs[alpha].insert_row(row)
+
+    def close(self):
+        for db in self.dbs.values():
+            db.close()
+
 def generate_weights_file():
 
     def data_rows_in(source_file):
         "Iterate over data rows in the source file, labeling fields and converting formats as required."
-        def upconvert(x):
-            for f in (int, float):
-                try:
-                    return f(x)
-                except ValueError:
-                    pass
-            return x
         header = None
         for k, line in enumerate(smart_open(source_file)):
             if k == 0:
@@ -56,11 +83,6 @@ def generate_weights_file():
                 header = line.strip().split()
             else:
                 yield dict(zip(header, map(upconvert, line.strip().split())))
-
-    def source_files(source_dir=os.path.join(SOURCE_DIR, BETAS_DIR)):
-        "List all relevant source files"
-        for x in smart_list(source_dir, including=BETAS_INCLUDE_CLAUSE):
-            yield os.path.join(source_dir, x)
 
     class DB:
         "This encapsulates a single SQLite DB (for a given source file and alpha)."
@@ -95,24 +117,8 @@ def generate_weights_file():
             self("INSERT INTO weights VALUES(?, ?, ?, ?, ?, NULL, NULL, NULL)", (row['rsid'], row['gene'], row['beta'], row['ref'],row['alt']))
             "alt allele is the dosage/effect allele in GTEx data"
 
-    class MetaDB:
-        "This handles all the DBs for each source file (tissue type)"
-        def __init__(self, source_file):
-            self.source_file = source_file
-            self.dbs = {} # alpha -> DB object
-
-        def insert_row(self, row):
-            alpha = row['alpha']
-            if alpha not in self.dbs:
-                self.dbs[alpha] = DB(self.source_file, alpha)
-            self.dbs[alpha].insert_row(row)
-
-        def close(self):
-            for db in self.dbs.values():
-                db.close()
-
-    for source_file in source_files():
-        print "Processing %s..."%source_file
+    for source_file in source_files(os.path.join(SOURCE_DIR, BETAS_DIR), BETAS_INCLUDE_CLAUSE):
+        print "Processing %s..." %source_file
         meta_db = MetaDB(source_file=source_file)
         for row in data_rows_in(source_file):
             meta_db.insert_row(row)
@@ -122,14 +128,6 @@ def generate_weights_file():
 def add_extra_data():
     def data_rows_in(source_file):
         "Iterate over data rows in the source file, labeling fields and converting formats as required."
-        def upconvert(x):
-            for f in (int, float):
-                try:
-                    return f(x)
-                except ValueError:
-                    pass
-            return x
-
         header = None
         for k, line in enumerate(smart_open(source_file)):
             if k == 0:
@@ -139,10 +137,6 @@ def add_extra_data():
             else:
                 yield dict(zip(header, map(upconvert, line.strip().split())))
 
-    def source_files(source_dir=os.path.join(SOURCE_DIR,RESULTS_DIR)):
-        "List all relevant source files"
-        for x in smart_list(source_dir, including=RESULTS_INCLUDE_CLAUSE):
-            yield os.path.join(source_dir, x)
 
     class DB:
         "This encapsulates a single SQLite DB (for a given source file and alpha)."
@@ -171,25 +165,9 @@ def add_extra_data():
         def insert_row(self, row):
             self("INSERT INTO extra VALUES(?, ?, ?, ?, ?)", (row['gene'], row['genename'], row['R2'], row['n.snps'], row['pval']))
 
-    class MetaDB:
-        "This handles all the DBs for each source file (tissue type)"
-        def __init__(self, source_file):
-            self.source_file = source_file
-            self.dbs = {} # alpha -> DB object
 
-        def insert_row(self, row):
-            alpha = row['alpha']
-            if alpha not in self.dbs:
-                self.dbs[alpha] = DB(self.source_file, alpha)
-            self.dbs[alpha].insert_row(row)
-
-        def close(self):
-            for db in self.dbs.values():
-                db.close()
-
-
-    for source_file in source_files():
-        print "Processing %s..."%source_file
+    for source_file in source_files(os.path.join(SOURCE_DIR, RESULTS_DIR), RESULTS_INCLUDE_CLAUSE):
+        print "Processing %s..." % source_file
         meta_db = MetaDB(source_file=source_file)
         for row in data_rows_in(source_file):
             meta_db.insert_row(row)
@@ -198,14 +176,6 @@ def add_extra_data():
 def add_log_data():
     def data_rows_in(source_file):
         "Iterate over data rows in the source file, labeling fields and converting formats as required."
-        def upconvert(x):
-            for f in (int, float):
-                try:
-                    return f(x)
-                except ValueError:
-                    pass
-            return x
-
         header = None
         for k, line in enumerate(smart_open(source_file)):
             if k == 0:
@@ -214,11 +184,6 @@ def add_log_data():
                 header = line.strip().split()
             else:
                 yield dict(zip(header, map(upconvert, line.strip().split())))
-
-    def source_files(source_dir=os.path.join(SOURCE_DIR,LOGS_DIR)):
-        "List all relevant source files"
-        for x in smart_list(source_dir, including=LOGS_INCLUDE_CLAUSE):
-            yield os.path.join(source_dir, x)
 
     class DB:
         "This encapsulates a single SQLite DB (for a given source file and alpha)."
@@ -247,41 +212,17 @@ def add_log_data():
         def insert_row(self, row):
             self("INSERT INTO construction VALUES(?, ?, ?)", (row['chr'], row['n_genes'], row['seed_for_cv']))
 
-    class MetaDB:
-        "This handles all the DBs for each source file (tissue type)"
-        def __init__(self, source_file):
-            self.source_file = source_file
-            self.dbs = {} # alpha -> DB object
-
-        def insert_row(self, row):
-            alpha = row['alpha']
-            if alpha not in self.dbs:
-                self.dbs[alpha] = DB(self.source_file, alpha)
-            self.dbs[alpha].insert_row(row)
-
-        def close(self):
-            for db in self.dbs.values():
-                db.close()
-
-
-    for source_file in source_files():
+    for source_file in source_files(os.path.join(SOURCE_DIR,LOGS_DIR), LOGS_INCLUDE_CLAUSE):
         print "Processing %s..."%source_file
         meta_db = MetaDB(source_file=source_file)
         for row in data_rows_in(source_file):
             meta_db.insert_row(row)
         meta_db.close()
 
+
 def add_sample_data():
     def data_rows_in(source_file):
         "Iterate over data rows in the source file, labeling fields and converting formats as required."
-        def upconvert(x):
-            for f in (int, float):
-                try:
-                    return f(x)
-                except ValueError:
-                    pass
-            return x
-
         header = None
         for k, line in enumerate(smart_open(source_file)):
             if k == 0:
@@ -290,11 +231,6 @@ def add_sample_data():
                 header = line.strip().split()
             else:
                 yield dict(zip(header, map(upconvert, line.strip().split())))
-
-    def source_files(source_dir=os.path.join(SOURCE_DIR, SAMPLE_INFO_DIR)):
-        "List all relevant source files"
-        for x in smart_list(source_dir, including=SAMPLE_INFO_INCLUDE_CLAUSE):
-            yield os.path.join(source_dir, x)
 
     class DB:
         "This encapsulates a single SQLite DB (for a given source file and alpha)."
@@ -320,29 +256,13 @@ def add_sample_data():
         def insert_row(self, row):
             self("INSERT INTO sample_info VALUES(?)", (row['n_samples'],))
 
-    class MetaDB:
-        "This handles all the DBs for each source file (tissue type)"
-        def __init__(self, source_file):
-            self.source_file = source_file
-            self.dbs = {} # alpha -> DB object
-
-        def insert_row(self, row):
-            alpha = row['alpha']
-            if alpha not in self.dbs:
-                self.dbs[alpha] = DB(self.source_file, alpha)
-            self.dbs[alpha].insert_row(row)
-
-        def close(self):
-            for db in self.dbs.values():
-                db.close()
-
-
-    for source_file in source_files():
+    for source_file in source_files(os.path.join(SOURCE_DIR, SAMPLE_INFO_DIR), SAMPLE_INFO_INCLUDE_CLAUSE):
         print "Processing %s..."%source_file
         meta_db = MetaDB(source_file=source_file)
         for row in data_rows_in(source_file):
             meta_db.insert_row(row)
         meta_db.close()
+
 
 if __name__ == '__main__':
     import argparse
