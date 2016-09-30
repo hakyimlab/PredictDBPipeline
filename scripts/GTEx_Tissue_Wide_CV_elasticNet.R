@@ -1,5 +1,5 @@
-suppressWarnings(library(glmnet))
-suppressWarnings(library(methods))
+suppressMessages(library(glmnet))
+suppressMessages(library(methods))
 "%&%" <- function(a,b) paste(a, b, sep = "")
 
 TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, alpha, out_dir, tis, chrom, snpset, window) {
