@@ -1,5 +1,5 @@
 argv <- commandArgs(trailingOnly = TRUE)
-source("GTex_Tissue_Wide_CV_elasticNet.R")
+source("GTEx_Tissue_Wide_CV_elasticNet.R")
 
 tis <- argv[1]
 chrom <- argv[2]
