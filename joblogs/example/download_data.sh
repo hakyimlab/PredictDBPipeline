@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-# Download gEUVADIS expression data
-curl -O http://www.ebi.ac.uk/arrayexpress/files/E-GEUV-1/GD462.GeneQuantRPKM.50FN.samplename.resk10.txt.gz
-# Download gencode v12 gene annotation
-curl -O ftp://ftp.sanger.ac.uk/pub/gencode/Gencode_human/release_12/gencode.v12.annotation.gtf.gz
-# TODO: Download preprocessed gEUVADIS genotype data from hakyimlab aws
+# Download zipped tar file of input data.
+curl -O https://s3.amazonaws.com/imlab-open/Data/PredictDB/predictdb_example.tar.gz
 
+tar -zxvf predictdb_example.tar.gz
 
 # Build directory tree
 mkdir -pv \
@@ -26,8 +24,12 @@ mkdir -pv \
     ../../data/output/dbs/ \
 
 # Format expression, only include Europeans.
-zless GD462.GeneQuantRPKM.50FN.samplename.resk10.txt.gz | \
+zless predictdb_example/GD462.GeneQuantRPKM.50FN.samplename.resk10.txt.gz | \
     cut -f1,5-284,374-466 > ../../data/input/expression_phenotypes/geuvadis.expr.txt
 # Reduce gencode annotation to genes only
-zless gencode.v12.annotation.gtf.gz | \
+zless predictdb_example/gencode.v12.annotation.gtf.gz | \
     awk '$3 == "gene"' > ../../data/input/annotations/gene_annotation/gencode.v12.genes.gtf
+
+# Decompress genotype and snp annotation and put in correct location.
+gunzip -c predictdb_example/geuvadis.snps.txt > ../../data/input/genotypes/geuvadis.snps.txt
+gunzip -c predictdb_example/geuvadis.annot.txt > ../../data/input/annotations/geuvadis.annot.txtß
