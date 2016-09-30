@@ -2,7 +2,16 @@
 ##############
 
 data/
-joblogs/
+joblogs/*
+!joblogs/example/
+joblogs/example/*
+!joblogs/example/create_model.R
+!joblogs/example/download_data.sh
+!joblogs/example/model_parameters.py
+!joblogs/example/post_process.py
+!joblogs/example/preprocess_example.py
+!joblogs/example/train_model_by_chr.pbs
+!joblogs/example/train_models.py
 
 # Utility Files #
 #################
