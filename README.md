@@ -5,7 +5,7 @@ data.
 
 These models can be used to predict gene expression in 44 different
 tissues, based on individual genotype.  To train the models, we used
-version 6 of the GTEx data and applied 10-fold cross validation
+version 6p of the GTEx data and applied 10-fold cross validation
 elastic-net within SNPs that are located within 1mb of the gene as
 features.
 

@@ -4,15 +4,15 @@ import os
 import re
 import sys
 
-def relavent_logfiles(jobs_dir):
+def relavent_logfiles(jobs_dir, p):
     """Generator yielding relevant output log file name"""
-    p = '.*_model_chr[1-9][0-9]?\.o.*'
+    # p = '.*_model_chr[1-9][0-9]?\.o.*'
     for file in os.listdir("../joblogs/" + jobs_dir):
         if re.match(p, file):
             yield file
 
 
-def check_job_logs(jobs_dir):
+def check_job_logs(jobs_dir, p):
     """Checks all log files in a jobs log directory to make sure they
     turn out ok.
 
@@ -20,7 +20,7 @@ def check_job_logs(jobs_dir):
     
     nfiles = 0
     nprobs = 0
-    for file in relavent_logfiles(jobs_dir):
+    for file in relavent_logfiles(jobs_dir, p):
         nfiles += 1
         if os.stat('../joblogs/' + jobs_dir + file).st_size == 0:
             # File is empty
@@ -44,4 +44,5 @@ def check_job_logs(jobs_dir):
     print "%i check out" % (nfiles - nprobs)
 
 if __name__ == "__main__":
-    check_job_logs(sys.argv[1])
+    p = '.*_model_chr[1-9][0-9]?\.o.*'
+    check_job_logs(sys.argv[1], p)

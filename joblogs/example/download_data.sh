@@ -32,4 +32,4 @@ zless predictdb_example/gencode.v12.annotation.gtf.gz | \
 
 # Decompress genotype and snp annotation and put in correct location.
 gunzip -c predictdb_example/geuvadis.snps.txt > ../../data/input/genotypes/geuvadis.snps.txt
-gunzip -c predictdb_example/geuvadis.annot.txt > ../../data/input/annotations/geuvadis.annot.txtß
+gunzip -c predictdb_example/geuvadis.annot.txt > ../../data/input/annotations/snp_annotation/geuvadis.annot.txt

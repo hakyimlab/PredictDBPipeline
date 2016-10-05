@@ -85,6 +85,27 @@ class DB:
         self.connection.commit()
         self.connection.close()
 
+class Intron_DB(DB):
+
+    def __init__(self, db_file):
+        DB.__init__(self, db_file)
+        self.construction_fields.add("pos_mod_100")
+
+    def add_construction(self, construction):
+        # Drop construction table if it already exists.
+        self.c.execute("DROP TABLE IF EXISTS construction")
+        # Create new construction table.
+        self.c.execute("CREATE TABLE construction (chr INTEGER, " + 
+            "`n.genes` INTEGER, `cv.seed` INTEGER, pos_mod_100 INTEGER)")
+        # Insert data.
+        for row in data_rows(construction, self.construction_fields):
+            self.insert_construction_row(row)
+
+
+    def insert_construction_row(self, row):
+        self.c.execute("INSERT INTO construction VALUES (?, ?, ?, ?)",
+            (row['chr'], row['n_genes'], row['seed_for_cv'], row['pos_mod_100']))
+
 
 def upconvert(x):
     '''Helper function for data_rows().'''
@@ -115,9 +136,9 @@ def data_rows(source_file, expected_fields):
                 yield dict(zip(header, map(upconvert, line.strip().split())))
 
 
-def make_sqlite_db(betas, results, construction, meta, output):
+def make_sqlite_db(betas, results, construction, meta, output, intron):
     print("Generating %s..." % output)
-    db = DB(output)
+    db = Intron_DB(output) if intron else DB(output)
     print("\tCreating weights table...")
     db.add_weights(betas)
     print("\tCreating extra table...")
@@ -155,8 +176,12 @@ if __name__ == '__main__':
         "--meta",
         required=True,
         help="Path to input file with parameters used to build model.")
+    parser.add_argument(
+        "--intron",
+        action="store_true",
+        help="Include if this was intron model")
 
     args = parser.parse_args()
 
     make_sqlite_db(args.betas, args.results, args.construction,
-        args.meta, args.output)
+        args.meta, args.output, args.intron)
