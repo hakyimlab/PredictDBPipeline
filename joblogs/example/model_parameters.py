@@ -11,25 +11,27 @@ SNP_ANNOTATION_FN = 'geuvadis.annot.txt'
 # List of genotype/expression file names:
 GENOTYPE_FNS = ['geuvadis.snps.txt']
 EXPRESSION_FNS = ['geuvadis.expr.txt']
-# File name of output for parse_gtf.py:
-GENE_ANNOT_INTER1 = 'gencode.v12.genes.parsed.txt'
-# File name of output for geno_annot_to_RDS.R:
-GENE_ANNOT_INTER2 = 'gencode.v12.genes.parsed.RDS'
-# File name prefix of outputs from split_snp_annot_by_chr.py:
-SNP_ANN_INTER_PREFIX1 = 'geuvadis.annot'
-# File name prefix for input files to snp_annot_to_RDS.R:
-SNP_ANN_INTER_PREFIX2 = 'geuvadis.annot.chr'
-# File name prefixes for output files from split_genotype_by_chr.py:
-GENOTYPE_INTER_PREFIX = ['geuvadis.snps']
-# File names for output files from expr_to_transposed_RDS.R:
-EXPR_INTER = ['geuvadis.expr.RDS']
 
-# Model metadata/parameters:
+# Model metadata/parameters. Keep all as strings:
 SNPSET = 'HapMap'
 ALPHA = '0.5'
 N_K_FOLDS = '10'
 RSID_LABEL = 'RSID_dbSNP137'
 WINDOW = '1e6'
+
+# Names for intermediate files.-----------------------------------------/
+# File name of output for parse_gtf.py:
+GENE_ANNOT_INTER1 = GENE_ANNOTATION_FN[:-3] + 'parsed.txt'
+# File name of output for geno_annot_to_RDS.R:
+GENE_ANNOT_INTER2 = GENE_ANNOT_INTER1[:-3] + 'RDS'
+# File name prefix of outputs from split_snp_annot_by_chr.py:
+SNP_ANN_INTER_PREFIX1 = SNP_ANNOTATION_FN[:-4]
+# File name prefix for input files to snp_annot_to_RDS.R:
+SNP_ANN_INTER_PREFIX2 = SNP_ANN_INTER_PREFIX1 + '.chr'
+# File name prefixes for output files from split_genotype_by_chr.py:
+GENOTYPE_INTER_PREFIX = map(lambda x: x[:-4], GENOTYPE_FNS)
+# File names for output files from expr_to_transposed_RDS.R:
+EXPR_INTER = map(lambda x: x[:-3] + "RDS", EXPRESSION_FNS)
 
 # Define directories---------------------------------------------------/
 INPUT_DIR = '../../data/input/'
