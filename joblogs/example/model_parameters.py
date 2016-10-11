@@ -19,7 +19,9 @@ N_K_FOLDS = '10'
 RSID_LABEL = 'RSID_dbSNP137'
 WINDOW = '1e6'
 
-# Names for intermediate files.-----------------------------------------/
+# Leave everything below here as is------------------------------------/
+
+# Names for intermediate files-----------------------------------------/
 # File name of output for parse_gtf.py:
 GENE_ANNOT_INTER1 = GENE_ANNOTATION_FN[:-3] + 'parsed.txt'
 # File name of output for geno_annot_to_RDS.R:
