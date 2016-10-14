@@ -51,3 +51,4 @@ ALL_LOGS_FILES = map(lambda x: OUTPUT_DIR + 'allLogs/' + x + '.allLogs.txt', STU
 ALL_META_DATA_FILES = map(lambda x: OUTPUT_DIR + 'allMetaData/' + x + '.allMetaData.txt', STUDY_NAMES)
 ALL_RESULTS_FILES = map(lambda x: OUTPUT_DIR + 'allResults/' + x + '.allResults.txt', STUDY_NAMES)
 DB_FILES = map(lambda x: OUTPUT_DIR + 'dbs/' + x + '_' + SNPSET + '_alpha' + ALPHA + '_window' + WINDOW + '.db', STUDY_NAMES)
+FILTERED_DB_FILES = map(lambda x: x[:-3] + '_filtered.db', DB_FILES)
