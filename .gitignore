@@ -16,3 +16,4 @@ joblogs/example/*
 # Utility Files #
 #################
 .DS_Store
+*.pyc
