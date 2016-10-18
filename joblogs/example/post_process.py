@@ -20,5 +20,5 @@ for i, study, in enumerate(STUDY_NAMES):
 
 for i, study in enumerate(STUDY_NAMES):
     print("Filtering " + study + " on significance.")
-    subprocess.call(['../../scripts/filter_on_significance.R', DB_FILES[i],
+    subprocess.call(['Rscript', '../../scripts/filter_on_significance.R', DB_FILES[i],
         INTER_DIR + GENE_ANN_DIR + GENE_ANNOT_INTER2, FILTERED_DB_FILES[i]])
