@@ -57,5 +57,5 @@ db_in <- argv[1]
 gene_annot_RDS_fn <- argv[2]
 db_out <- argv[3]
 
-gene_annot <- readRDS(gene_annot_RDS_fn)
+gene_annot <- readRDS(gene_annot_RDS_fn) %>% filter(gene_type == 'protein_coding')
 package_db(db_in, db_out, gene_annot)

@@ -2,7 +2,7 @@ suppressMessages(library(glmnet))
 suppressMessages(library(methods))
 "%&%" <- function(a,b) paste(a, b, sep = "")
 
-TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, alpha, out_dir, tis, chrom, snpset, window) {
+TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS, n_k_folds, alpha, out_dir, tis, chrom, snpset, window, seed = NA) {
   expression <- readRDS(expression_RDS)
   class(expression) <- 'numeric'
   genotype <- read.table(geno_file, header = TRUE, row.names = 'Id', stringsAsFactors = FALSE)
@@ -19,7 +19,7 @@ TW_CV_model <- function(expression_RDS, geno_file, gene_annot_RDS, snp_annot_RDS
   exp_genes <- colnames(expression)
   n_samples <- length(exp_samples)
   n_genes <- length(exp_genes)
-  seed <- sample(1:2016, 1)
+  seed <- ifelse(is.na(seed), sample(1:2016, 1), seed)
   log_df <- data.frame(chrom, n_genes, seed, alpha)
   colnames(log_df) <- c('chr', 'n_genes', 'seed_for_cv', 'alpha')
   write.table(log_df, file = out_dir %&% tis %&% '_chr' %&% chrom %&% '_elasticNet_model_log.txt', quote = FALSE, row.names = FALSE, sep = "\t")
