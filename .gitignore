@@ -12,6 +12,15 @@ joblogs/example/*
 !joblogs/example/preprocess_example.py
 !joblogs/example/train_model_by_chr.pbs
 !joblogs/example/train_models.py
+!joblogs/GTEx_1Mb_1KG/
+joblogs/GTEx_1Mb_1KG/*
+!joblogs/GTEx_1Mb_1KG/create_model.R
+!joblogs/GTEx_1Mb_1KG/model_parameters.py
+!joblogs/GTEx_1Mb_1KG/post_process.py
+!joblogs/GTEx_1Mb_1KG/post_process_gtex.pbs
+!joblogs/GTEx_1Mb_1KG/preprocess.py
+!joblogs/GTEx_1Mb_1KG/train_model_by_chr.pbs
+!joblogs/GTEx_1Mb_1KG/train_models.py
 
 # Utility Files #
 #################
