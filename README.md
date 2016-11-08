@@ -20,6 +20,6 @@ PrediXcan.
 With some modifications, this pipeline can be extended to analyze other
 studies which have genotype and expression data.
 
-(See our wiki)[https://github.com/hakyimlab/PredictDBPipeline/wiki] for
+[See our wiki](https://github.com/hakyimlab/PredictDBPipeline/wiki) for
 a tutorial with example files and a detailed description of these
 scripts.
