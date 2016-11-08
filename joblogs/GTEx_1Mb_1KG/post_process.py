@@ -20,7 +20,7 @@ for i, study, in enumerate(STUDY_NAMES):
 
 # This chunk is not working on tarbell for some reason. Something with a
 # mismatch between compiled and runtime versions of the RSQLite version.
-# Had to run this chunk locally by mounting drive.
+# Had to run this chunk locally by mounting drive. (R version 3.2.3, qvalue version 2.2.2)
 for i, study in enumerate(STUDY_NAMES):
     print("Filtering " + study + " on significance.")
     subprocess.call(['Rscript', '../../scripts/filter_on_significance.R', DB_FILES[i],
