@@ -2,7 +2,7 @@
 
 This code has been deprecated and exists solely for reference and documentation.
 
-The new model prediction pipeline is available in github [here](https://github.com/hakyimlab/PredictDB_Pipeline_GTEx_v7) (PredictDB_Pipeline_GTEx_v7),
+The model prediction pipeline (with nested cross validation) is available in github [here](https://github.com/hakyimlab/PredictDB-Tutorial),
 and a brief overview is available [here](https://groups.google.com/forum/#!topic/predixcanmetaxcan/TkBxYkUpNGw) (PrediXcan google group).
 
 
